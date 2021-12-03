@@ -26,8 +26,6 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableAsync(proxyTargetClass = true)
 public class WebSocketAutoConfiguration implements WebSocketConfigurer {
 
-//    @Autowired
-//    private CustomTextMessageHandler customTextMessageHandler;
     @Autowired
     private WebSocketInterceptor webSocketInterceptor;
 
@@ -46,9 +44,9 @@ public class WebSocketAutoConfiguration implements WebSocketConfigurer {
      * 客制化开发时需实现
      * @return
      */
-    @Bean("webSocketAuthService")
-    @ConditionalOnMissingBean(name ="webSocketAuthService")
-    public WebSocketAuthHandler webSocketAuthService() {
+    @Bean
+    @ConditionalOnMissingBean
+    public WebSocketAuthHandler webSocketAuthHandler() {
         return new DefaultSocketAuthHandler();
     }
 

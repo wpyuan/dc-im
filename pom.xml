@@ -44,7 +44,6 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.73</version>
-            <scope>i</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
