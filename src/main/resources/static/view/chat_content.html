@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no, email=no">
+    <meta name="HandheldFriendly" content="true">
+    <title>聊天内容窗口</title>
+    <link rel="stylesheet" href="/css/frozenui.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/scrollbar.css">
+    <style>
+        [v-cloak]{
+            display: none;
+        }
+        .ui-list {
+            background-color: transparent;
+        }
+
+        .ui-list > li {
+            margin-right: 12px;
+        }
+
+        .ui-chat-content {
+            width: 100%;
+        }
+
+        .ui-line-content-box {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .ui-line-content-box > img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .ui-line-content-box > .ui-line-content-info {
+            margin-left: 10px;
+            margin-right: 60px;
+        }
+
+        .ui-line-content-box > .ui-line-content-info > .ui-line-content-header {
+            font-size: 12px;
+            color: rgba(51, 51, 51, 0.8);
+            height: 20px;
+            line-height: 20px;
+            margin: -5px 0 0;
+        }
+
+        .ui-line-content-box > .ui-line-content-info > .ui-line-content-body {
+            padding: 10px;
+            font-size: 14px;
+            background: #fff;
+            position: relative;
+            margin-top: 8px;
+            float: left;
+            min-width: 10px;
+            min-height: 10px;
+        }
+
+        .ui-line-content-box > .ui-line-content-info > .ui-line-content-body::before {
+            position: absolute;
+            left: -8px;
+            top: 8px;
+            content: '';
+            border-right: 10px solid #FFF;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+        }
+
+        .ui-line-content-box-self {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .ui-line-content-box-self > img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .ui-line-content-box-self > .ui-line-content-info {
+            margin-right: 10px;
+            margin-left: 60px;
+        }
+
+        .ui-line-content-box-self > .ui-line-content-info > .ui-line-content-header {
+            font-size: 12px;
+            color: rgba(51, 51, 51, 0.8);
+            height: 20px;
+            line-height: 20px;
+            margin: -5px 0 0 0;
+            text-align: right;
+        }
+
+        .ui-line-content-box-self > .ui-line-content-info > .ui-line-content-body {
+            padding: 10px;
+            font-size: 14px;
+            float: right;
+            position: relative;
+            margin-top: 8px;
+            background: rgb(152,225,101);
+            min-width: 10px;
+            min-height: 10px;
+        }
+
+        .ui-line-content-box-self > .ui-line-content-info > .ui-line-content-body::after {
+            position: absolute;
+            right: -8px;
+            top: 8px;
+            content: '';
+            border-left: 10px solid rgb(152,225,101);
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+        }
+
+        .ui-avatar {
+            min-width: 50px;
+            margin: 8px 5px 8px 5px !important;
+        }
+    </style>
+</head>
+<body ontouchstart>
+<section id="app" class="ui-container">
+    <section class="ui-box">
+        <div class="demo-item">
+            <div class="demo-block">
+                <ul class="ui-list">
+                    <li>
+                        <div style="display: none">TOP PROTECT</div>
+                    </li>
+                    <li>
+                        <div class="ui-chat-content">
+                            <template v-for="line in contentList">
+                                <!-- 我的 -->
+                                <div v-if="line.self" class="ui-line-content-box-self">
+                                    <div class="ui-line-content-info">
+                                        <p class="ui-line-content-header">{{line.from.username}} {{line.date}}</p>
+                                        <div class="ui-line-content-body">{{line.content}}</div>
+                                    </div>
+                                    <!--<img src="itemc.headUrl">-->
+                                    <div class="ui-avatar">
+                                        <span :style="{'background-image': 'url(' + line.from.avatar + ')'}"></span>
+                                    </div>
+                                </div>
+                                <!-- 对方 -->
+                                <div v-else class="ui-line-content-box">
+                                    <!--<img src="itemc.headUrl">-->
+                                    <div class="ui-avatar">
+                                        <span :style="{'background-image': 'url(' + line.from.avatar + ')'}"></span>
+                                    </div>
+                                    <div class="ui-line-content-info">
+                                        <p class="ui-line-content-header">{{line.from.username}} {{line.date}}</p>
+                                        <div class="ui-line-content-body">{{line.content}}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+</section>
+
+
+<script src="/js/lib/zepto.min.js"></script>
+<script src="/js/index.js"></script>
+<script src="/js/websocket-helper.js"></script>
+<script src="/js/db-helper.js"></script>
+<script src="/js/vue.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data() {
+            return {
+                contentList: [],
+            }
+        },
+        mounted() {
+            this.initData()
+        },
+        methods: {
+            /**
+             * JS控制滚动条的位置：
+             window.scrollTo(x,y);
+             竖向滚动条置顶 window.scrollTo(0,0);
+             竖向滚动条置底 window.scrollTo(0,document.body.scrollHeight)
+             */
+            scrollControl(height) {
+                window.scrollTo(0, height || document.body.scrollHeight)
+            },
+            initData() {
+                let that = this;
+                const actTab = JSON.parse(localStorage.getItem("dc-chat-act-tab"));
+                const chatViewName = actTab.chatViewName
+                const user = JSON.parse(localStorage.getItem("dc-chat-user"));
+                var username = user.username;
+                db_helper.selectAll({
+                    db: top.db,
+                    table: 'chat_content',
+                    onsuccess: function (e) {
+                        var res = e.target.result;
+                        if(res) {
+                            if (!res.value || !res.value.from || !res.value.to) {
+                                res.continue();
+                                return;
+                            }
+                            if ((res.value.from.username === chatViewName && res.value.to.username === username) ||
+                                (res.value.from.username === username && res.value.to.username === chatViewName)) {
+                                that.contentList.push(res.value)
+                            }
+                            res.continue();
+                        }
+                        // 聊天内容
+                        if (!that.contentList || that.contentList.length === 0) {
+                            return;
+                        }
+                        that.refreshChatView();
+                    }
+                })
+            },
+            refreshChatView(chatContent) {
+                this.contentList = this.contentList.concat(chatContent || []);
+                this.contentList = this.contentList.sort((a, b)=> {return a.uid - b.uid});
+                setTimeout(()=> this.scrollControl(), 1);
+            },
+        },
+    })
+</script>
+</body>
+</html>

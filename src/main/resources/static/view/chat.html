@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no, email=no">
+    <meta name="HandheldFriendly" content="true">
+    <title>聊天窗口</title>
+    <link rel="stylesheet" href="../css/frozenui.css"/>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .ui-footer {
+            height: 46px;
+        }
+        iframe {
+            width: 100%;
+            border: 0;
+            overflow: hidden;
+        }
+
+        body {
+            overflow-y: hidden;
+        }
+
+        .ui-textarea {
+            width: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            border: 0;
+            background: none;
+            overflow-y: hidden;
+            resize: none;
+
+            scroll_bar-arrow-color:yellow;
+            scroll_bar-base-color:lightsalmon;
+        }
+
+    </style>
+</head>
+<body ontouchstart>
+<header class="ui-header ui-header-positive ui-border-b">
+    <i class="ui-icon-return" onclick="parent.switchTab('#userList')"></i>
+    <h1 id="chatName"></h1>
+<!--    <button class="ui-btn">回首页</button>-->
+</header>
+<footer class="ui-footer">
+    <section class="ui-input-wrap ui-border-t">
+        <div class="ui-input ui-border-radius">
+            <input type="text" id="content" placeholder="我也说一句...">
+        </div>
+<!--        <div class="ui-input ui-border-radius">-->
+<!--            <textarea class="ui-textarea" placeholder="我也说一句..."></textarea>-->
+<!--        </div>-->
+        <button class="ui-btn" onclick="send()">发送</button>
+    </section>
+</footer>
+<section class="ui-container">
+</section>
+<script src="/js/lib/zepto.min.js"></script>
+<script src="/js/index.js"></script>
+<script src="/js/jquery-3.5.1.min.js"></script>
+<script src="/js/websocket-helper.js"></script>
+<script src="/js/db-helper.js"></script>
+<script>
+    // $('.ui-header .ui-btn').click(function(){
+    //     location.href= '/index.html';
+    // });
+
+    function send() {
+        var content = $("#content").val();
+        if (!content) {
+            return;
+        }
+        websocket_helper.push({
+            ws: parent.ws,
+            content: content,
+            to: $("#chatName").html(),
+        })
+        $("#content").val('');
+    }
+
+    function refreshChatView(chatName, content) {
+        document.getElementById(`chatContentIframe-${chatName}`).contentWindow.vm.refreshChatView(content)
+    }
+
+    function initIframe(chatName) {
+        // 聊天窗口标题
+        $("#chatName").html(chatName);
+        var iframes = document.getElementsByTagName("iframe");
+        var isNotExist = true;
+        if (iframes && iframes.length > 0) {
+            for (let i = 0; i < iframes.length; i++) {
+                let item = iframes[i]
+                if (item.id === `chatContentIframe-${chatName}`) {
+                    $(item).show()
+                    isNotExist = false;
+                } else {
+                    $(item).hide()
+                }
+            }
+        }
+        if (isNotExist) {
+            var iframe = `<iframe id="chatContentIframe-${chatName}" src="chat_content.html" onload="iframeAutoSize(this)"></iframe>`;
+            $(".ui-container").append(iframe);
+        }
+    }
+
+    window.onresize = function () {
+        var iframes = document.getElementsByTagName("iframe");
+        if (iframes && iframes.length > 0) {
+            iframes.forEach((item) => {
+                iframeAutoSize(item);
+            })
+        }
+    }
+
+    function iframeAutoSize(iframe) {
+        if (iframe) {
+            iframe.height = document.documentElement.clientHeight - $(".ui-header").height() - $(".ui-footer").height();
+        }
+    }
+</script>
+</body>
+</html>

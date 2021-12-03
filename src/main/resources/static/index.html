@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no, email=no">
+    <meta name="HandheldFriendly" content="true">
+    <title>在线聊天</title>
+    <link rel="stylesheet" href="css/frozenui.css"/>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        iframe {
+            width: 100%;
+            border: 0;
+            overflow: hidden;
+        }
+
+        body {
+            overflow-y: hidden;
+        }
+    </style>
+</head>
+
+<body ontouchstart>
+<section id="app" class="ui-container">
+    <section>
+        <div class="demo-item">
+            <div class="demo-block">
+                <div class="ui-tab">
+                    <ul id="tabTitle" class="ui-tab-nav ui-border-b" style="display: none">
+                        <li class="current" id="userList"><span>用户列表</span></li>
+                        <li id="chatView"><span>聊天窗口</span></li>
+                    </ul>
+                    <ul class="ui-tab-content" style="width:200%; padding:0;">
+                        <li>
+                            <iframe id="userListIframe" src="view/user_list.html" onload="iframeAutoSize(this)"></iframe>
+                        </li>
+                        <li>
+                            <iframe id="chatViewIframe" src="view/chat.html" onload="iframeAutoSize(this)"></iframe>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</section>
+
+<script src="js/lib/zepto.min.js"></script>
+<script src="js/index.js"></script>
+<script src="js/websocket-helper.js"></script>
+<script src="/js/db-helper.js"></script>
+<script src="/js/layout.js"></script>
+<script type="text/javascript">
+
+    var db;
+    var ws;
+    init()
+
+    function init() {
+        // 聊天记录表
+        db_helper.createTable({
+            db: db,
+            schema: "chat",
+            table: "chat_content",
+            autoIncrement: true,
+            onupgradeneeded: function (e, d) {
+                db = d;
+                // 用户表
+                db_helper.createTable({
+                    db: d,
+                    schema: "chat",
+                    table: "chat_user",
+                    pkName: "username"
+                })
+            },
+            onsuccess: function (e, d) {
+                db = d;
+            },
+        })
+        localStorage.setItem("dc-chat-act-tab", JSON.stringify({tab: "#userList"}));
+    }
+
+    function switchTab(target, chatViewName) {
+        var actTab = {
+            tab: target,
+            chatViewName: chatViewName
+        }
+        localStorage.setItem("dc-chat-act-tab", JSON.stringify(actTab));
+        switch (target) {
+            case "#chatView":
+                // 渲染聊天窗口
+                document.getElementById('chatViewIframe').contentWindow.initIframe(chatViewName)
+                break;
+            default:
+                ;
+        }
+        this.switchTabAnimation(target);
+    }
+
+    function switchTabAnimation(target) {
+        $("#tabTitle").find('li').removeClass('current');
+        $(target).addClass('current');
+        $('.ui-tab-content').eq(0).css({
+            'transform': 'translate3d(-' + ($(target).index() * $('.ui-tab-content li').offset().width) + 'px,0,0)',
+            'transition': 'transform 0.25s linear'
+        })
+    }
+
+    function refreshChatView(chatName, chatContent) {
+        document.getElementById('chatViewIframe').contentWindow.refreshChatView(chatName, chatContent)
+    }
+
+    function getIframeTagHtml(iframeId, tag) {
+        return $(document.getElementById(iframeId).contentWindow.document.body).find(tag).html()
+    }
+</script>
+</body>
+</html>

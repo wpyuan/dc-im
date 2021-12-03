@@ -1,0 +1,4 @@
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.github.dc.im.config.WebSocketAutoConfiguration,\
+  com.github.dc.im.config.EnableLoadBeanAutoConfiguration

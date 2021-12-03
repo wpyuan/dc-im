@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no, email=no">
+    <meta name="HandheldFriendly" content="true">
+    <title>聊天列表</title>
+    <link rel="stylesheet" href="../css/frozenui.css"/>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/scrollbar.css">
+    <style>
+        [v-cloak]{
+            display: none;
+        }
+        .bd-masthead {
+            position: relative;
+            padding: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            background-image: linear-gradient(180deg, #0088cc, #01cfff);
+        }
+        .ui-avatar {
+            overflow: visible;
+        }
+        .ui-row-right {
+            text-align: right;
+            padding-right: 8px;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-box-pack: center;
+        }
+        h2 {
+            font-weight: bolder;
+            color: #f2f2f2 !important;
+        }
+        .ui-col-1 {
+            text-align: left;
+        }
+    </style>
+</head>
+<body ontouchstart>
+<section id="app" class="ui-container">
+    <div v-show="warnTooltipsShow" class="ui-tooltips ui-tooltips-warn">
+        <div class="ui-tooltips-cnt ui-border-b">
+            <i></i>无法连接服务器，请检查你的网络设置，或尝试刷新重连。<a class="ui-icon-close" @click="warnTooltipsShow=false"></a>
+        </div>
+    </div>
+    <div class="index-wrap">
+        <section>
+            <div class="demo-item bd-masthead">
+                <div class="demo-block">
+                    <div class="ui-row-flex">
+                        <div class="ui-col-1">
+                            <div class="ui-avatar">
+                                <span :style="{'background-image': 'url(' + myAvatarUrl + ')'}"></span>
+                            </div>
+                        </div>
+                        <div class="ui-col-1">
+                            <div class="ui-row-flex" style="-webkit-box-orient: vertical;">
+                                <div class="ui-col-1">
+                                    <h2 style="padding: 2px 5px;font-size: large">{{username}}</h2>
+                                </div>
+                                <div class="ui-col-1"><span style="padding: 0px 5px;font-size: x-small;">{{status}}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-item">
+                <div class="demo-block">
+                    <div class="ui-searchbar-wrap ui-border-b" :class="{focus: isActive}">
+                        <div class="ui-searchbar ui-border-radius" @click="handleSearchBarStatus(true)">
+                            <i class="ui-icon-search"></i>
+                            <div class="ui-searchbar-text">搜索用户名</div>
+                            <div class="ui-searchbar-input"><input v-model="search" type="text" placeholder="搜索用户名" autocapitalize="off"/></div>
+                            <i class="ui-icon-close" @click="search=undefined"></i>
+                        </div>
+                        <button class="ui-searchbar-cancel" @click="handleSearchBarStatus(false)">取消</button>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-item">
+                <div class="demo-block">
+                    <ul class="ui-list">
+                        <template v-for="user in userList">
+                            <li @click="chatClick(user.username, user)">
+                                <div class="ui-avatar" :class="{'ui-reddot-border': user.notification}">
+                                    <span :style="{'background-image': 'url(' + user.avatarUrl + ')'}"></span>
+                                </div>
+                                <div class="ui-list-info">
+                                    <h4 class="ui-nowrap">{{user.username}}</h4>
+                                    <p class="ui-nowrap">{{user.lastMsg||'暂无消息'}}</p>
+                                </div>
+                                <ul class="ui-row-right">
+                                    <li class="ui-txt-info"><h6>{{user.lastDate||''}}</h6></li>
+                                    <!--                        <li><div></div></li>-->
+                                </ul>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</section>
+</body>
+<script src="/js/lib/zepto.min.js"></script>
+<script src="/js/index.js"></script>
+<script src="/js/jquery-3.5.1.min.js"></script>
+<script src="/js/websocket-helper.js"></script>
+<script src="/js/db-helper.js"></script>
+<script src="/js/vue.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                warnTooltipsShow: false,
+                myAvatarUrl: '/img/avatar_1.jpg',
+                isActive: false,
+                search: undefined,
+                username: '未登录',
+                status: '断线',
+                userList: [],
+                currentUser: undefined,
+                key: undefined,
+            }
+        },
+        mounted() {
+            this.onLoad();
+        },
+        methods: {
+            onLoad() {
+                this.currentUser = JSON.parse(localStorage.getItem("dc-chat-user"));
+                this.key = sessionStorage.getItem("dc-chat-openId");
+                if (!this.currentUser || !this.key) {
+                    top.location.href = "/login.html";
+                    return;
+                }
+                this.refresh();
+                this.connect();
+            },
+            handleSearchBarStatus(status) {
+                this.isActive = status;
+            },
+            connect() {
+                if (parent.ws) {
+                    return;
+                }
+                this.username = this.currentUser.username;
+                this.myAvatarUrl = this.currentUser.avatar;
+                websocket_helper.load({
+                    key: this.key,
+                    onopen: this.connected,
+                    onmessage: this.receive,
+                    onclose: this.closed,
+                });
+            },
+            connected(ws) {
+                this.status = "已连接";
+                this.warnTooltipsShow = false;
+                console.log("已连接上...");
+                parent.ws = ws;
+                websocket_helper.push({
+                    ws: ws,
+                    to: "server",
+                    action: "getUsers",
+                });
+            },
+            receive(evt) {
+                console.log("数据已接收...");
+                if (evt.data) {
+                    const data = JSON.parse(evt.data);
+                    if (data.from === "server") {
+                        this.handleReceiveServerMsg(data);
+                        return;
+                    }
+                    this.handleReceiveUserMsg(data);
+                }
+            },
+            closed() {
+                this.status = '连接已关闭';
+                this.warnTooltipsShow = true;
+            },
+            handleReceiveServerMsg(data) {
+                switch (data.action) {
+                    case "getUsers":
+                        this.getUsers(data)
+                        break;
+                    default:;
+                }
+            },
+            handleReceiveUserMsg(data) {
+                const self = data.self;
+                const content = {
+                    ...data,
+                }
+                // 记录消息内容
+                db_helper.insert({
+                    db: parent.db,
+                    table: 'chat_content',
+                    data: content,
+                })
+                const changeUser = self ? data.to.username : data.from.username;
+                let updateUser = this.userList.find(u => u.username === changeUser);
+                updateUser.lastMsg = data.content;
+                updateUser.lastDate = data.date;
+                const actTab = JSON.parse(localStorage.getItem("dc-chat-act-tab"));
+                if (!actTab.tab) {
+                    return;
+                }
+                switch (actTab.tab) {
+                    case "#userList":
+                        // 1、刷新user_list.html
+                        updateUser.notification = true;
+                        break;
+                    case "#chatView":
+                        // 2、刷新chat_content.html
+                        const chatName = parent.getIframeTagHtml('chatViewIframe', '#chatName');
+                        if (chatName !== data.to.username && chatName !== data.from.username) {
+                            updateUser.notification = true;
+                            break;
+                        }
+                        parent.refreshChatView(actTab.chatViewName, [content])
+                        break;
+                    default:;
+                }
+            },
+            getUsers(data) {
+                if (!data.content || data.content.length == 0) {
+                    return;
+                }
+                data.content.forEach((item, i) => {
+                    this.userList.push({
+                        username: item.username,
+                        lastMsg: null,
+                        avatarUrl: item.avatar,
+                        lastDate: '',
+                        notification: false,
+                    });
+                    db_helper.put({
+                        db: parent.db,
+                        table: 'chat_user',
+                        pkName: 'username',
+                        data: item,
+                    })
+                });
+            },
+            chatClick(username, user) {
+                user.notification = false;
+                parent.switchTab("#chatView", username);
+            },
+            refresh()  {
+                let that = this;
+                $.ajax({
+                    url: "/refresh",
+                    type: "post",
+                    dataType: "json",
+                    contentType: "application/json;charset=uft-8",
+                    async: false,
+                    data: this.key,
+                    success: function(res) {
+                        if (!res.success) {
+                            that.warnTooltipsShow = true;
+                            return;
+                        }
+                        that.key = res.openId;
+                        sessionStorage.setItem("dc-chat-openId", res.openId);
+                    },
+                })
+            },
+        },
+    })
+</script>
+</html>
