@@ -136,7 +136,7 @@
                 this.currentUser = JSON.parse(localStorage.getItem("dc-chat-user"));
                 this.key = sessionStorage.getItem("dc-chat-openId");
                 if (!this.currentUser || !this.key) {
-                    top.location.href = "/login.html";
+                    top.location.href = "/dc_im_login.html";
                     return;
                 }
                 this.refresh();
