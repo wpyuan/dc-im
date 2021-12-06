@@ -14,6 +14,13 @@ import java.util.Map;
  */
 public interface IAuthService {
     /**
+     * 认证密钥获取
+     * @param userInfoData 用户信息
+     * @return 密钥
+     */
+    Map<String, Object> authorize(UserInfoData userInfoData);
+
+    /**
      * 登录认证处理
      * @param userInfoData 用户信息
      * @return 认证结果

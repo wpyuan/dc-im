@@ -1,11 +1,11 @@
 dc:
-  number:
-    cache:
-      # 启用缓存，true or false
-      enable: true
-      # 缓存类型。 默认是no-cache（无缓存）; 或者local（本地），或者redis（已封装第三方），可扩展
-      type: no-cache
-
+  im:
+    # 认证授权配置
+    authorize:
+      # 公钥
+      publicKey: MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCRldX8vTnMXpIDTF/miPcnba0PoFcZn5RTQqv5LX1OgzN17ocL71EWFONN9rxfeuuoZzjb/U3oQ9hxKtLeOmMDJs5X4Bat4MtVmVvXORyOag/u+ovwbItC/rA63qPl/oC8W07romeyExY3j9aMk+3Zp8m5VEyJqTu27Uq0g0uCFwIDAQAB
+      # 私钥
+      privateKey: MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAJGV1fy9OcxekgNMX+aI9ydtrQ+gVxmflFNCq/ktfU6DM3XuhwvvURYU4032vF9666hnONv9TehD2HEq0t46YwMmzlfgFq3gy1WZW9c5HI5qD+76i/Bsi0L+sDreo+X+gLxbTuuiZ7ITFjeP1oyT7dmnyblUTImpO7btSrSDS4IXAgMBAAECgYAeK91TKawmzJqaEGP3lP8Trskk6efjKY1FzBVz6JeFg+9QS4S1Vn2Jg/6vk6jqaMEZ/3prLQ3OSvE6UtOstpD6L+0ctdo5XxcMKkSdthUE7wDLOjLbIx04fxrxvF5EYpJvStRkXmUvR3TQoWY9N0GPwnnwavZS1feKnv7wsj4QoQJBANIE2Hb2O/afD5L2JMPHSze83qesVSc9sLcvjRedt4gMe2UgK1oW5/572Y/PfrYHhGmqXTfR8636ATseCOf0/38CQQCxdZwnvhu2+Ptl3nDaO+k2qi1U6FO481UNpfuidUKdYS6BBsUOHrI+ceEH2iU/mHg5h3ZBhV755Hle6QKWzMlpAkEAgE7zjKJc+gwtcKSuy2lrm87o3NmdYI8A8rm7Ym053oV5scuYkL6j18cEoSasjDtFe2TY9KxxSp4NuHdeC5CTswJAdX7pZWb58qvnyAr/rX79arRCT3WD+XEjX2YGtgntkUZHBCb3UeIBIldEJ27IOtM4xt5p7ffgapRbx/t/O1lcAQJATduUfTzDjKcwmTCLfE0NWxMmqwXiJNpWKBiUFadCOAOMaNdCjwbBQqtp0TPt79xS6Qcdxtp8n+VqjZ3nr7h8Dg==
 # 必须配置，强依赖
 spring:
   redis:

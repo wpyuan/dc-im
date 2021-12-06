@@ -76,6 +76,7 @@
 <script src="/js/lib/zepto.min.js"></script>
 <script src="js/jquery-3.5.1.min.js"></script>
 <script src="/js/vue.js"></script>
+<script src="/js/jsencrypt.min.js"></script>
 <script>
     new Vue({
         el: '#app',
@@ -96,6 +97,7 @@
                 username: undefined,
                 password: undefined,
                 avatar: undefined,
+                pubKey: undefined,
             }
         },
         mounted() {
@@ -117,15 +119,17 @@
                     return;
                 }
                 const avatar = this.avatar || '/img/avatar_1.jpg';
-
+                this.handleAuthorize();
+                let encrypt = new JSEncrypt();
+                encrypt.setPublicKey(this.pubKey);
                 $.ajax({
-                    url: "/login",
+                    url: "/dc-im/authorize/token",
                     type: "post",
                     dataType: "json",
                     contentType: "application/json;charset=uft-8",
                     data: JSON.stringify({
                         username: username,
-                        password: password,
+                        password: encrypt.encrypt(password),
                         avatar: avatar
                     }),
                     success: function(res) {
@@ -140,6 +144,28 @@
                     },
                 })
             },
+            handleAuthorize() {
+                let that = this;
+                $.ajax({
+                    url: "/dc-im/authorize",
+                    type: "post",
+                    dataType: "json",
+                    contentType: "application/json;charset=uft-8",
+                    async: false,
+                    data: JSON.stringify({
+                        username: this.username
+                    }),
+                    success: function(res) {
+                        if (!res.success) {
+                            that.warnContent = res.message;
+                            that.warnTooltipsShow = true;
+                            return;
+                        }
+                        that.pubKey = res.data;
+                        sessionStorage.setItem("dc-chat-pubKey", res.data);
+                    },
+                })
+            }
         },
     })
 

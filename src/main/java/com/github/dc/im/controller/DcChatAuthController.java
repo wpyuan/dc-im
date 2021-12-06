@@ -18,14 +18,19 @@ import java.util.Map;
  * @date 2021/11/24 9:06
  */
 @RestController
-@RequestMapping({"/", "/{sys}"})
+@RequestMapping({"/dc-im", "/{sys}/dc-im"})
 public class DcChatAuthController {
 
     @Autowired
     private IAuthService authService;
 
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody UserInfoData userInfoData) {
+    @PostMapping("/authorize")
+    public ResponseEntity<Map<String, Object>> authorize(@RequestBody UserInfoData userInfoData) {
+        return ResponseEntity.ok(authService.authorize(userInfoData));
+    }
+
+    @PostMapping("/authorize/token")
+    public ResponseEntity<Map<String, Object>> token(@RequestBody UserInfoData userInfoData) {
         return ResponseEntity.ok(authService.login(userInfoData));
     }
 

@@ -1,11 +1,8 @@
 package com.github.dc.im.data;
 
 import com.github.dc.im.pojo.OfflineUserInfo;
-import com.github.dc.im.pojo.UserInfoData;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.DelayQueue;
 
 /**

@@ -1,5 +1,6 @@
 package com.github.dc.im.pojo;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +22,7 @@ import java.io.Serializable;
 @Builder(toBuilder = true)
 public class UserInfoData implements Serializable {
     private String username;
+    @JSONField(serialize = false)
     private String password;
     private String avatar;
 }
