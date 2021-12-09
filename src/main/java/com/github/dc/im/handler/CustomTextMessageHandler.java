@@ -3,6 +3,7 @@ package com.github.dc.im.handler;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.dc.im.data.CacheData;
+import com.github.dc.im.helper.ApplicationContextHelper;
 import com.github.dc.im.manager.WsSessionManager;
 import com.github.dc.im.pojo.ChatContentData;
 import com.github.dc.im.pojo.OfflineUserInfo;
@@ -130,7 +131,11 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
 
     @Async
     public void recordData(ChatContentData chatContentData) {
-        log.info("聊天数据持久化：{}", chatContentData);
+        log.trace("聊天数据持久化处理：{}", chatContentData);
+        RecordChatContentHandler recordChatContentHandler = ApplicationContextHelper.getBean(RecordChatContentHandler.class);
+        if (recordChatContentHandler != null) {
+            recordChatContentHandler.handle(chatContentData);
+        }
     }
 
     /**
