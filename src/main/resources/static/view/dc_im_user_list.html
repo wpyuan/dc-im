@@ -6,8 +6,8 @@
     <meta name="format-detection" content="telephone=no, email=no">
     <meta name="HandheldFriendly" content="true">
     <title>聊天列表</title>
-    <link rel="stylesheet" href="../css/frozenui.css"/>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/frozenui.css"/>
+    <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/scrollbar.css">
     <style>
         [v-cloak]{
@@ -133,7 +133,7 @@
         },
         methods: {
             onLoad() {
-                this.currentUser = JSON.parse(localStorage.getItem("dc-chat-user"));
+                this.currentUser = JSON.parse(sessionStorage.getItem("dc-chat-user"));
                 this.key = sessionStorage.getItem("dc-chat-openId");
                 if (!this.currentUser || !this.key) {
                     top.location.href = "/dc_im_login.html";
@@ -146,7 +146,7 @@
                 this.isActive = status;
             },
             connect() {
-                if (parent.ws) {
+                if (parent.vm.ws) {
                     return;
                 }
                 this.username = this.currentUser.username;
@@ -162,7 +162,7 @@
                 this.status = "已连接";
                 this.warnTooltipsShow = false;
                 console.log("已连接上...");
-                parent.ws = ws;
+                parent.vm.ws = ws;
                 websocket_helper.push({
                     ws: ws,
                     to: "server",
@@ -199,15 +199,16 @@
                 }
                 // 记录消息内容
                 db_helper.insert({
-                    db: parent.db,
+                    db: parent.vm.db,
                     table: 'chat_content',
                     data: content,
                 })
                 const changeUser = self ? data.to.username : data.from.username;
+                parent.refreshChatView(changeUser, [content])
                 let updateUser = this.userList.find(u => u.username === changeUser);
                 updateUser.lastMsg = data.content;
                 updateUser.lastDate = data.date;
-                const actTab = JSON.parse(localStorage.getItem("dc-chat-act-tab"));
+                const actTab = JSON.parse(sessionStorage.getItem("dc-chat-act-tab"));
                 if (!actTab.tab) {
                     return;
                 }
@@ -221,9 +222,24 @@
                         const chatName = parent.getIframeTagHtml('chatViewIframe', '#chatName');
                         if (chatName !== data.to.username && chatName !== data.from.username) {
                             updateUser.notification = true;
-                            break;
+                            // 添加消息提示
+                            const lastNewsTip = parent.vm.newsTips.find(n => n.username === updateUser.username)
+                            let newsCount = 1;
+                            if (lastNewsTip) {
+                                parent.vm.newsTips = parent.vm.newsTips.filter(n => n.username != updateUser.username);
+                                newsCount = lastNewsTip.count + 1;
+                            }
+                            let newsTip = {
+                                avatar: updateUser.avatarUrl,
+                                content: `${updateUser.username}: ${updateUser.lastMsg}`,
+                                uid: data.uid,
+                                show: false,
+                                count: newsCount,
+                                username: updateUser.username,
+                            };
+                            parent.vm.newsTips.push(newsTip);
+                            setTimeout(()=> newsTip.show = true, 1)
                         }
-                        parent.refreshChatView(actTab.chatViewName, [content])
                         break;
                     default:;
                 }
@@ -241,7 +257,7 @@
                         notification: false,
                     });
                     db_helper.put({
-                        db: parent.db,
+                        db: parent.vm.db,
                         table: 'chat_user',
                         pkName: 'username',
                         data: item,

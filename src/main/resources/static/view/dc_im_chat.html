@@ -72,7 +72,7 @@
             return;
         }
         websocket_helper.push({
-            ws: parent.ws,
+            ws: parent.vm.ws,
             content: content,
             to: $("#chatName").html(),
         })
@@ -80,7 +80,9 @@
     }
 
     function refreshChatView(chatName, content) {
-        document.getElementById(`chatContentIframe-${chatName}`).contentWindow.vm.refreshChatView(content)
+        if (document.getElementById(`chatContentIframe-${chatName}`)) {
+            document.getElementById(`chatContentIframe-${chatName}`).contentWindow.vm.refreshChatView(content)
+        }
     }
 
     function initIframe(chatName) {
@@ -108,9 +110,9 @@
     window.onresize = function () {
         var iframes = document.getElementsByTagName("iframe");
         if (iframes && iframes.length > 0) {
-            iframes.forEach((item) => {
-                iframeAutoSize(item);
-            })
+            for (let i = 0; i < iframes.length; i++) {
+                iframeAutoSize(iframes[i]);
+            }
         }
     }
 

@@ -5,9 +5,9 @@
 window.onresize = function () {
     var iframes = document.getElementsByTagName("iframe");
     if (iframes && iframes.length > 0) {
-        iframes.forEach((item) => {
-            iframeAutoSize(item);
-        })
+        for (let i = 0; i <  iframes.length; i++) {
+            iframeAutoSize(iframes[i]);
+        }
     }
 }
 function iframeAutoSize(iframe) {

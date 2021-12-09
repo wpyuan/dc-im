@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="css/frozenui.css"/>
     <link rel="stylesheet" href="css/style.css">
     <style>
+        [v-cloak]{
+            display: none;
+        }
         iframe {
             width: 100%;
             border: 0;
@@ -17,6 +20,34 @@
 
         body {
             overflow-y: hidden;
+        }
+
+        .ui-newmsg {
+            width: 100%;
+            top: 30px;
+            z-index: 2000;
+            position: fixed;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            -webkit-transition: opacity .3s,top .4s,-webkit-transform .4s;
+        }
+
+        /* 可以设置不同的进入和离开动画 */
+        /* 设置持续时间和动画函数 */
+        .newtips-enter-active {
+            transition: all .3s ease;
+        }
+        .newtips-leave-active {
+            transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+        }
+        .newtips-enter, .newtips-leave-to
+            /* .newtips-leave-active for below version 2.1.8 */ {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .ui-newstips {
+            opacity: 0.9;
         }
     </style>
 </head>
@@ -42,6 +73,25 @@
                 </div>
             </div>
         </div>
+
+        <div class="demo-item ui-newmsg">
+            <div class="demo-block">
+                <template v-for="newsTip in newsTips">
+                    <transition name="newtips">
+                        <div class="ui-newstips-wrap" v-if="newsTip.show" @click="handlerNewsTipsClick(newsTip)">
+                            <div class="ui-newstips">
+                                    <span class="ui-avatar-tiled">
+                                        <span :style="{'background-image': 'url(' + newsTip.avatar + ')'}"></span>
+                                    </span>
+                                <div>{{newsTip.content}}</div>
+                                <span v-if="newsTip.count==1" class="ui-reddot ui-reddot-static"></span>
+                                <span v-else class="ui-badge-num">{{newsTip.count}}</span>
+                            </div>
+                        </div>
+                    </transition>
+                </template>
+            </div>
+        </div>
     </section>
 </section>
 
@@ -49,42 +99,60 @@
 <script src="js/websocket-helper.js"></script>
 <script src="/js/db-helper.js"></script>
 <script src="/js/layout.js"></script>
+<script src="/js/vue.js"></script>
 <script type="text/javascript">
 
-    var db;
-    var ws;
-    init()
-
-    function init() {
-        // 聊天记录表
-        db_helper.createTable({
-            db: db,
-            schema: "chat",
-            table: "chat_content",
-            autoIncrement: true,
-            onupgradeneeded: function (e, d) {
-                db = d;
-                // 用户表
+    var vm = new Vue({
+        el: '#app',
+        data() {
+           return {
+               haveNewsTips: true,
+               newsTips: [],
+               db: undefined,
+               ws: undefined,
+           }
+        },
+        mounted() {
+            this.init()
+        },
+        methods: {
+            init() {
+                let that = this;
+                // 聊天记录表
                 db_helper.createTable({
-                    db: d,
+                    db: this.db,
                     schema: "chat",
-                    table: "chat_user",
-                    pkName: "username"
+                    table: "chat_content",
+                    autoIncrement: true,
+                    onupgradeneeded: function (e, d) {
+                        that.db = d;
+                        // 用户表
+                        db_helper.createTable({
+                            db: d,
+                            schema: "chat",
+                            table: "chat_user",
+                            pkName: "username"
+                        })
+                    },
+                    onsuccess: function (e, d) {
+                        that.db = d;
+                    },
                 })
+                sessionStorage.setItem("dc-chat-act-tab", JSON.stringify({tab: "#userList"}));
             },
-            onsuccess: function (e, d) {
-                db = d;
+            handlerNewsTipsClick(newsTip) {
+                newsTip.show = false;
             },
-        })
-        localStorage.setItem("dc-chat-act-tab", JSON.stringify({tab: "#userList"}));
-    }
+        },
+    })
+
 
     function switchTab(target, chatViewName) {
         var actTab = {
             tab: target,
             chatViewName: chatViewName
         }
-        localStorage.setItem("dc-chat-act-tab", JSON.stringify(actTab));
+        sessionStorage.setItem("dc-chat-act-tab", JSON.stringify(actTab));
         switch (target) {
             case "#chatView":
                 // 渲染聊天窗口

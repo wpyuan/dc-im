@@ -194,12 +194,12 @@
             },
             initData() {
                 let that = this;
-                const actTab = JSON.parse(localStorage.getItem("dc-chat-act-tab"));
+                const actTab = JSON.parse(sessionStorage.getItem("dc-chat-act-tab"));
                 const chatViewName = actTab.chatViewName
-                const user = JSON.parse(localStorage.getItem("dc-chat-user"));
+                const user = JSON.parse(sessionStorage.getItem("dc-chat-user"));
                 var username = user.username;
                 db_helper.selectAll({
-                    db: top.db,
+                    db: top.vm.db,
                     table: 'chat_content',
                     onsuccess: function (e) {
                         var res = e.target.result;
