@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -172,15 +173,12 @@ public class AuthenticateUserInfoManager {
         }
     }
 
-    @Async("dcImAsync")
-    public void handleOffline() throws InterruptedException {
-        while (true) {
-            OfflineUserInfo offlineUserInfo = CacheData.OFFLINE_USER_INFO.poll();
-            if (offlineUserInfo != null) {
-                remove(offlineUserInfo.getOpenId());
-                log.warn("[离线] 凭证：{}, {}", offlineUserInfo.getOpenId(), offlineUserInfo.getUserInfoData());
-            }
-            Thread.sleep(1000);
+    @Scheduled(cron = "0/1 * * * * ?")
+    public void handleOffline() {
+        OfflineUserInfo offlineUserInfo = CacheData.OFFLINE_USER_INFO.poll();
+        if (offlineUserInfo != null) {
+            remove(offlineUserInfo.getOpenId());
+            log.warn("[离线] 凭证：{}, {}", offlineUserInfo.getOpenId(), offlineUserInfo.getUserInfoData());
         }
     }
 
