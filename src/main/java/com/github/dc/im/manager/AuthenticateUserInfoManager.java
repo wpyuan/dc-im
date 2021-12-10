@@ -1,5 +1,8 @@
 package com.github.dc.im.manager;
 
+import com.github.dc.im.data.CacheData;
+import com.github.dc.im.helper.ApplicationContextHelper;
+import com.github.dc.im.pojo.OfflineUserInfo;
 import com.github.dc.im.pojo.UserInfoData;
 import com.github.dc.im.util.EntityUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -63,13 +66,13 @@ public class AuthenticateUserInfoManager {
     public void put(String key, UserInfoData userInfoData, boolean syncCache) {
         AUTHENTICATE_USER_INFO.put(key, userInfoData);
         if (syncCache) {
-            syncCache("put", key, userInfoData);
+            _this().syncCache("put", key, userInfoData);
         }
     }
 
     public void remove(String key) {
         AUTHENTICATE_USER_INFO.remove(key);
-        syncCache("remove", key, null);
+        _this().syncCache("remove", key, null);
     }
 
     public void remove(Set<String> keys) {
@@ -97,7 +100,7 @@ public class AuthenticateUserInfoManager {
         if (stringRedisTemplate.hasKey(CHAT_KEY_PREFIX + key)) {
             HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
             UserInfoData userInfoData = mapToBean(hashOperations.entries(CHAT_KEY_PREFIX + key), UserInfoData.class);
-            syncLocal("put", key, userInfoData);
+            _this().syncLocal("put", key, userInfoData);
             return userInfoData;
         }
         return null;
@@ -143,7 +146,7 @@ public class AuthenticateUserInfoManager {
         return MapUtils.unmodifiableMap(AUTHENTICATE_USER_INFO);
     }
 
-    @Async
+    @Async("dcImAsync")
     public void syncLocal(String opt, String key, UserInfoData userInfoData) {
         switch (opt) {
             case "put":
@@ -154,7 +157,7 @@ public class AuthenticateUserInfoManager {
         }
     }
 
-    @Async
+    @Async("dcImAsync")
     public void syncCache(String opt, String key, UserInfoData userInfoData) {
         switch (opt) {
             case "put":
@@ -167,6 +170,22 @@ public class AuthenticateUserInfoManager {
             default:
                 ;
         }
+    }
+
+    @Async("dcImAsync")
+    public void handleOffline() throws InterruptedException {
+        while (true) {
+            OfflineUserInfo offlineUserInfo = CacheData.OFFLINE_USER_INFO.poll();
+            if (offlineUserInfo != null) {
+                remove(offlineUserInfo.getOpenId());
+                log.warn("[离线] 凭证：{}, {}", offlineUserInfo.getOpenId(), offlineUserInfo.getUserInfoData());
+            }
+            Thread.sleep(1000);
+        }
+    }
+
+    private AuthenticateUserInfoManager _this() {
+       return ApplicationContextHelper.getBean(AuthenticateUserInfoManager.class);
     }
 
     private <B> Map<String, String> beanToMap(B bean) {

@@ -124,12 +124,12 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
         fromSession.sendMessage(new TextMessage(JSON.toJSONString(chatContentData)));
         if (toSession.isOpen()) {
             toSession.sendMessage(new TextMessage(JSON.toJSONString(chatContentData.toBuilder().self(false).build())));
-            recordData(chatContentData);
+            _this().recordData(chatContentData);
         }
 
     }
 
-    @Async
+    @Async("dcImAsync")
     public void recordData(ChatContentData chatContentData) {
         log.trace("聊天数据持久化处理：{}", chatContentData);
         RecordChatContentHandler recordChatContentHandler = ApplicationContextHelper.getBean(RecordChatContentHandler.class);
@@ -161,4 +161,7 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
         }
     }
 
+    private CustomTextMessageHandler _this() {
+        return ApplicationContextHelper.getBean(CustomTextMessageHandler.class);
+    }
 }
