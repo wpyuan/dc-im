@@ -64,7 +64,11 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
                 msg.put("content", contents);
                 msg.put("from", "server");
                 msg.put("action", "getUsers");
-                otherSession.sendMessage(new TextMessage(JSON.toJSONString(msg)));
+                if (otherSession.isOpen()) {
+                    otherSession.sendMessage(new TextMessage(JSON.toJSONString(msg)));
+                } else {
+                    log.warn("会话已关闭：{}，无法推送消息：{}", otherSession.getAttributes().get("openId"), JSON.toJSONString(msg));
+                }
             }
 
         } else {
@@ -117,7 +121,11 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
                     msg.put("content", contents);
                     msg.put("from", "server");
                     msg.put("action", action);
-                    fromSession.sendMessage(new TextMessage(JSON.toJSONString(msg)));
+                    if (fromSession.isOpen()) {
+                        fromSession.sendMessage(new TextMessage(JSON.toJSONString(msg)));
+                    } else {
+                        log.warn("会话已关闭：{}，无法推送消息：{}", fromSession.getAttributes().get("openId"), JSON.toJSONString(msg));
+                    }
                     break;
                 default:
                     ;

@@ -1,8 +1,6 @@
 let websocket_helper = {
     load: function (option) {
-        if ("WebSocket" in window) {
-            console.log("您的浏览器支持 WebSocket!");
-        } else {
+        if (!"WebSocket" in window) {
             // 浏览器不支持 WebSocket
             alert("您的浏览器不支持 WebSocket!");
             return;

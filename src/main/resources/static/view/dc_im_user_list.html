@@ -47,9 +47,9 @@
 </head>
 <body ontouchstart>
 <section id="app" class="ui-container">
-    <div v-show="warnTooltipsShow" class="ui-tooltips ui-tooltips-warn">
-        <div class="ui-tooltips-cnt ui-border-b">
-            <i></i>无法连接服务器，请检查你的网络设置，或尝试刷新重连。<a class="ui-icon-close" @click="warnTooltipsShow=false"></a>
+    <div v-show="warnTooltipsShow" class="ui-tooltips ui-tooltips-warn ui-tooltips-hignlight" @click="manualReConnection">
+        <div class="ui-tooltips-cnt ui-tooltips-cnt-link ui-border-b">
+            <i></i>无法连接服务器，请检查你的网络设置。
         </div>
     </div>
     <div class="index-wrap">
@@ -67,7 +67,10 @@
                                 <div class="ui-col-1">
                                     <h2 style="padding: 2px 5px;font-size: large">{{username}}</h2>
                                 </div>
-                                <div class="ui-col-1"><span style="padding: 0px 5px;font-size: x-small;">{{status}}</span></div>
+                                <div class="ui-col-1">
+                                    <i v-if="isReConnecting" class="ui-loading"></i>
+                                    <span v-else style="padding: 0px 5px;font-size: x-small;">{{status}}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -130,6 +133,8 @@
                 userList: [],
                 currentUser: undefined,
                 key: undefined,
+                isReConnecting: false,
+                reConnectTryCount: 5,
             }
         },
         mounted() {
@@ -165,6 +170,7 @@
             connected(ws) {
                 this.status = "已连接";
                 this.warnTooltipsShow = false;
+                this.reConnectionEnd()
                 parent.vm.ws = ws;
                 websocket_helper.push({
                     ws: ws,
@@ -184,7 +190,7 @@
             },
             closed() {
                 this.status = '连接已关闭';
-                this.warnTooltipsShow = true;
+                this.reConnection()
             },
             handleReceiveServerMsg(data) {
                 switch (data.action) {
@@ -286,13 +292,37 @@
                     data: this.key,
                     success: function(res) {
                         if (!res.success) {
-                            that.warnTooltipsShow = true;
                             return;
                         }
                         that.key = res.openId;
                         sessionStorage.setItem("dc-chat-openId", res.openId);
                     },
                 })
+            },
+            // 手动重连
+            manualReConnection() {
+                this.reConnectTryCount = 5
+                this.reConnection()
+            },
+            reConnection() {
+                this.reConnectionBegin()
+                if (this.reConnectTryCount > 0) {
+                    this.reConnectTryCount --;
+                    setTimeout(()=> this.onLoad(), 1000)
+                    return;
+                }
+                // 重连次数还未连接上，最后提示
+                this.reConnectionEnd()
+                this.warnTooltipsShow = true;
+                this.status = '连接已关闭';
+            },
+            reConnectionBegin() {
+                parent.vm.ws = null;
+                this.isReConnecting = true
+                this.warnTooltipsShow = false
+            },
+            reConnectionEnd() {
+                this.isReConnecting = false
             },
         },
     })
