@@ -129,7 +129,7 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
         // 给客户端的消息
         WebSocketSession toSession = WsSessionManager.getByUsername(toUsername);
         if (toSession == null) {
-            /// TODO: 2021/11/11
+            // TODO: 2021/11/11 离线消息记录后上线推送
             log.warn("[消息发送失败] 客户端未连接，用户名：{}", toUsername);
             return;
         }

@@ -165,7 +165,6 @@
             connected(ws) {
                 this.status = "已连接";
                 this.warnTooltipsShow = false;
-                console.log("已连接上...");
                 parent.vm.ws = ws;
                 websocket_helper.push({
                     ws: ws,
@@ -174,7 +173,6 @@
                 });
             },
             receive(evt) {
-                console.log("数据已接收...");
                 if (evt.data) {
                     const data = JSON.parse(evt.data);
                     if (data.from === "server") {

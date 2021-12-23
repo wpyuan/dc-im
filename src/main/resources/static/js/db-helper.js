@@ -19,7 +19,6 @@ var db_helper = {
         // blocked：上一次的数据库连接还未关闭。
         // upgradeneeded：第一次打开该数据库，或者数据库版本发生变化。
         openRequest.onupgradeneeded = function (e) {
-            console.log("Upgrading...");
             if (option.onupgradeneeded && typeof option.onupgradeneeded == "function") {
                 option.onupgradeneeded(e);
             }
@@ -27,7 +26,6 @@ var db_helper = {
 
         // success：打开成功。
         openRequest.onsuccess = function (e) {
-            console.log("Success!");
             if (option.onsuccess && typeof option.onsuccess == "function") {
                 option.onsuccess(e, e.target.result);
             }
@@ -35,7 +33,6 @@ var db_helper = {
 
         // error：打开失败。
         openRequest.onerror = function (e) {
-            console.log("Error");
             console.dir(e);
             if (option.onerror && typeof option.onerror == "function") {
                 option.onerror(e);
@@ -97,7 +94,6 @@ var db_helper = {
         }
 
         request.onsuccess = function (e) {
-            console.log("数据添加成功！");
             if (option.onsuccess && typeof option.onsuccess == "function") {
                 option.onsuccess(e)
             }
@@ -169,7 +165,6 @@ var db_helper = {
         }
 
         request.onsuccess = function (e) {
-            console.log("数据更新成功！");
             if (option.onsuccess && typeof option.onsuccess == "function") {
                 option.onsuccess(e)
             }
@@ -193,7 +188,6 @@ var db_helper = {
         }
 
         request.onsuccess = function (e) {
-            console.log("数据删除成功！");
             if (option.onsuccess && typeof option.onsuccess == "function") {
                 option.onsuccess(e)
             }

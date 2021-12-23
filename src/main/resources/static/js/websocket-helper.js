@@ -33,7 +33,6 @@ let websocket_helper = {
             to: option.to,
             action: option.action,
         }
-        console.log("发送内容：" + JSON.stringify(content));
         option.ws.send(JSON.stringify(content));
     }
 }
