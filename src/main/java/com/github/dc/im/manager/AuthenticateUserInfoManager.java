@@ -1,5 +1,6 @@
 package com.github.dc.im.manager;
 
+import com.alibaba.fastjson.JSON;
 import com.github.dc.im.data.CacheData;
 import com.github.dc.im.helper.ApplicationContextHelper;
 import com.github.dc.im.pojo.OfflineUserInfo;
@@ -17,9 +18,14 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -174,10 +180,31 @@ public class AuthenticateUserInfoManager {
     }
 
     @Scheduled(cron = "0/1 * * * * ?")
-    public void handleOffline() {
+    public void handleOffline() throws IOException {
         OfflineUserInfo offlineUserInfo = CacheData.OFFLINE_USER_INFO.poll();
         if (offlineUserInfo != null) {
             remove(offlineUserInfo.getOpenId());
+            // 推送离线状态，刷新的除外
+            if (WsSessionManager.isOnline(offlineUserInfo.getUserInfoData().getUsername())) {
+                return;
+            }
+            List<WebSocketSession> otherSessions = WsSessionManager.getAll();
+            List<Map<String, Object>> contents = new ArrayList<>();
+            Map<String, Object> msg = new HashMap<>(2);
+            UserInfoData user = offlineUserInfo.getUserInfoData();
+            msg.put("username", user.getUsername());
+            msg.put("avatar", user.getAvatar());
+            msg.put("isOffline", true);
+            contents.add(msg);
+            for (WebSocketSession otherSession : otherSessions) {
+                msg = new HashMap<>(5);
+                msg.put("count", otherSessions.size());
+                msg.put("date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                msg.put("content", contents);
+                msg.put("from", "server");
+                msg.put("action", "getUsers");
+                otherSession.sendMessage(new TextMessage(JSON.toJSONString(msg)));
+            }
             log.warn("[离线] 凭证：{}, {}", offlineUserInfo.getOpenId(), offlineUserInfo.getUserInfoData());
         }
     }

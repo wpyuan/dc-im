@@ -7,6 +7,7 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -95,7 +96,8 @@ public class WsSessionManager {
      */
     public static WebSocketSession getByUsername(String username) {
         Objects.requireNonNull(username, "用户名不能为空");
-        return SESSION_POOL.entrySet().stream().filter(u -> username.equals(((UserInfoData) u.getValue().getAttributes().get("userInfo")).getUsername())).findFirst().get().getValue();
+        Map.Entry<String, WebSocketSession> entry = SESSION_POOL.entrySet().stream().filter(u -> username.equals(((UserInfoData) u.getValue().getAttributes().get("userInfo")).getUsername())).findFirst().orElse(null);
+        return entry == null ? null : entry.getValue();
     }
 
     /**
@@ -106,5 +108,15 @@ public class WsSessionManager {
     public static List<WebSocketSession> getAll() {
         // 获得 session
         return Collections.unmodifiableList(SESSION_POOL.values().stream().collect(Collectors.toList()));
+    }
+
+    /**
+     * 根据用户名判断是否在线
+     * @param username 用户名
+     * @return 是否在线
+     */
+    public static Boolean isOnline(String username) {
+        WebSocketSession session = getByUsername(username);
+        return session != null && session.isOpen();
     }
 }

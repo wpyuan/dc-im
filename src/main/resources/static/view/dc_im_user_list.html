@@ -39,6 +39,10 @@
         .ui-col-1 {
             text-align: left;
         }
+        .ui-avatar-offline {
+            -webkit-filter: grayscale(100%);
+            filter: grayscale(100%);
+        }
     </style>
 </head>
 <body ontouchstart>
@@ -87,7 +91,7 @@
                     <ul class="ui-list">
                         <template v-for="user in userList">
                             <li @click="chatClick(user.username, user)">
-                                <div class="ui-avatar" :class="{'ui-reddot-border': user.notification}">
+                                <div class="ui-avatar" :class="{'ui-reddot-border': user.notification, 'ui-avatar-offline': user.isOffline}">
                                     <span :style="{'background-image': 'url(' + user.avatarUrl + ')'}"></span>
                                 </div>
                                 <div class="ui-list-info">
@@ -249,12 +253,17 @@
                     return;
                 }
                 data.content.forEach((item, i) => {
+                    let userIndex = this.userList.findIndex(u => u.username === item.username);
+                    if (userIndex > -1) {
+                        this.userList.splice(userIndex, 1)
+                    }
                     this.userList.push({
                         username: item.username,
                         lastMsg: null,
                         avatarUrl: item.avatar,
                         lastDate: '',
                         notification: false,
+                        isOffline: item.isOffline,
                     });
                     db_helper.put({
                         db: parent.vm.db,

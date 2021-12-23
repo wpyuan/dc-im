@@ -45,6 +45,28 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
             // 用户连接成功，放入在线用户缓存
             log.info("[连接成功] 凭证：{}, {}", openId, userInfoData);
             WsSessionManager.add(openId, session);
+            // 推送上线状态
+            List<WebSocketSession> sessions = WsSessionManager.getAll();
+            List<Map<String, Object>> contents = new ArrayList<>();
+            Map<String, Object> msg = new HashMap<>(2);
+            UserInfoData user = (UserInfoData) session.getAttributes().get("userInfo");
+            msg.put("username", user.getUsername());
+            msg.put("avatar", user.getAvatar());
+            msg.put("isOffline", false);
+            contents.add(msg);
+            for (WebSocketSession otherSession : sessions) {
+                if (session.equals(otherSession)) {
+                    continue;
+                }
+                msg = new HashMap<>(5);
+                msg.put("count", sessions.size());
+                msg.put("date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                msg.put("content", contents);
+                msg.put("from", "server");
+                msg.put("action", "getUsers");
+                otherSession.sendMessage(new TextMessage(JSON.toJSONString(msg)));
+            }
+
         } else {
             throw new RuntimeException("用户登录已经失效!");
         }

@@ -136,7 +136,7 @@
                         <div class="ui-chat-content">
                             <template v-for="line in contentList">
                                 <!-- 我的 -->
-                                <div v-if="line.self" class="ui-line-content-box-self">
+                                <div v-if="line.self&&line.from.username!=chatViewName" class="ui-line-content-box-self">
                                     <div class="ui-line-content-info">
                                         <p class="ui-line-content-header">{{line.from.username}} {{line.date}}</p>
                                         <div class="ui-line-content-body">{{line.content}}</div>
@@ -147,7 +147,7 @@
                                     </div>
                                 </div>
                                 <!-- 对方 -->
-                                <div v-else class="ui-line-content-box">
+                                <div v-else-if="(!line.self)&&line.from.username==chatViewName" class="ui-line-content-box">
                                     <!--<img src="itemc.headUrl">-->
                                     <div class="ui-avatar">
                                         <span :style="{'background-image': 'url(' + line.from.avatar + ')'}"></span>
@@ -176,6 +176,7 @@
         el: '#app',
         data() {
             return {
+                chatViewName: undefined,
                 contentList: [],
             }
         },
@@ -195,7 +196,7 @@
             initData() {
                 let that = this;
                 const actTab = JSON.parse(sessionStorage.getItem("dc-chat-act-tab"));
-                const chatViewName = actTab.chatViewName
+                this.chatViewName = actTab.chatViewName;
                 const user = JSON.parse(sessionStorage.getItem("dc-chat-user"));
                 var username = user.username;
                 db_helper.selectAll({
@@ -208,8 +209,8 @@
                                 res.continue();
                                 return;
                             }
-                            if ((res.value.from.username === chatViewName && res.value.to.username === username) ||
-                                (res.value.from.username === username && res.value.to.username === chatViewName)) {
+                            if ((res.value.from.username === that.chatViewName && res.value.to.username === username) ||
+                                (res.value.from.username === username && res.value.to.username === that.chatViewName)) {
                                 that.contentList.push(res.value)
                             }
                             res.continue();
