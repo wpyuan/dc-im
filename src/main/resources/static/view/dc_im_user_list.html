@@ -171,6 +171,7 @@
                 this.status = "已连接";
                 this.warnTooltipsShow = false;
                 this.reConnectionEnd()
+                this.reConnectionSuccess();
                 parent.vm.ws = ws;
                 websocket_helper.push({
                     ws: ws,
@@ -259,16 +260,20 @@
                 data.content.forEach((item, i) => {
                     let userIndex = this.userList.findIndex(u => u.username === item.username);
                     if (userIndex > -1) {
-                        this.userList.splice(userIndex, 1)
+                        let user = this.userList.find(u => u.username === item.username)
+                        user = item
+                        user.avatarUrl = item.avatar
+                        Vue.set(this.userList, userIndex, user);
+                    } else {
+                        this.userList.push({
+                            username: item.username,
+                            lastMsg: null,
+                            avatarUrl: item.avatar,
+                            lastDate: '',
+                            notification: false,
+                            isOffline: item.isOffline,
+                        });
                     }
-                    this.userList.push({
-                        username: item.username,
-                        lastMsg: null,
-                        avatarUrl: item.avatar,
-                        lastDate: '',
-                        notification: false,
-                        isOffline: item.isOffline,
-                    });
                     db_helper.put({
                         db: parent.vm.db,
                         table: 'chat_user',
@@ -308,13 +313,12 @@
                 this.reConnectionBegin()
                 if (this.reConnectTryCount > 0) {
                     this.reConnectTryCount --;
-                    setTimeout(()=> this.onLoad(), 1000)
+                    setTimeout(()=> this.onLoad(), 2000)
                     return;
                 }
                 // 重连次数还未连接上，最后提示
                 this.reConnectionEnd()
-                this.warnTooltipsShow = true;
-                this.status = '连接已关闭';
+                this.reConnectionFail();
             },
             reConnectionBegin() {
                 parent.vm.ws = null;
@@ -324,6 +328,13 @@
             reConnectionEnd() {
                 this.isReConnecting = false
             },
+            reConnectionFail() {
+                this.warnTooltipsShow = true;
+                this.status = '连接已关闭';
+            },
+            reConnectionSuccess() {
+                this.reConnectTryCount = 5
+            }
         },
     })
 </script>
