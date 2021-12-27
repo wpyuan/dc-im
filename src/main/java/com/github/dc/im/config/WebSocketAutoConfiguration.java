@@ -35,7 +35,7 @@ public class WebSocketAutoConfiguration implements WebSocketConfigurer {
      */
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(customTextMessageHandler(), "ws")
+        registry.addHandler(new CustomTextMessageHandler(), "ws")
                 .addInterceptors(webSocketInterceptor)
                 .setAllowedOrigins("*");
     }
@@ -48,11 +48,6 @@ public class WebSocketAutoConfiguration implements WebSocketConfigurer {
     @ConditionalOnMissingBean
     public WebSocketAuthHandler webSocketAuthHandler() {
         return new DefaultSocketAuthHandler();
-    }
-
-    @Bean("dcImTextMessageHandler")
-    public CustomTextMessageHandler customTextMessageHandler() {
-        return new CustomTextMessageHandler();
     }
 
     @Bean("dcImApplicationContextHelper")

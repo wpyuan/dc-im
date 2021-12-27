@@ -171,7 +171,7 @@ public class AuthenticateUserInfoManager {
                 stringRedisTemplate.opsForHash().putAll(CHAT_KEY_PREFIX + key, beanToMap(userInfoData));
                 break;
             case "remove":
-                log.debug("[移除凭证缓存] {}", key);
+                log.debug("[凭证缓存移除] {}", key);
                 stringRedisTemplate.delete(CHAT_KEY_PREFIX + key);
                 break;
             default:
@@ -185,10 +185,10 @@ public class AuthenticateUserInfoManager {
         if (offlineUserInfo != null) {
             remove(offlineUserInfo.getOpenId());
             // 推送离线状态，刷新的除外
-            if (WsSessionManager.isOnline(offlineUserInfo.getUserInfoData().getUsername())) {
+            if (WebSocketSessionManager.isOnline(offlineUserInfo.getUserInfoData().getUsername())) {
                 return;
             }
-            List<WebSocketSession> otherSessions = WsSessionManager.getAll();
+            List<WebSocketSession> otherSessions = WebSocketSessionManager.getAll();
             List<Map<String, Object>> contents = new ArrayList<>();
             Map<String, Object> msg = new HashMap<>(2);
             UserInfoData user = offlineUserInfo.getUserInfoData();
@@ -205,7 +205,7 @@ public class AuthenticateUserInfoManager {
                 msg.put("action", "getUsers");
                 otherSession.sendMessage(new TextMessage(JSON.toJSONString(msg)));
             }
-            log.warn("[离线] 凭证：{}, {}", offlineUserInfo.getOpenId(), offlineUserInfo.getUserInfoData());
+            log.warn("[离线] 凭证：{}, 用户：{}", offlineUserInfo.getOpenId(), offlineUserInfo.getUserInfoData());
         }
     }
 

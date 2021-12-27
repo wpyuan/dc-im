@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * @date 2021/11/10 16:44
  */
 @Slf4j
-public class WsSessionManager {
+public class WebSocketSessionManager {
     /**
      * 保存连接 session 的地方
      */
@@ -72,7 +72,7 @@ public class WsSessionManager {
                 // 关闭连接
                 session.close();
             } catch (IOException e) {
-                log.warn("[ws关闭异常] {}", key);
+                log.warn("[ws关闭异常] 凭证：{}", key);
             }
         }
     }

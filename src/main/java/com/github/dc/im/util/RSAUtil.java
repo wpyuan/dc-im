@@ -51,7 +51,7 @@ public class RSAUtil {
             RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
             return Pair.of(publicKey, privateKey);
         } catch (NoSuchAlgorithmException e) {
-            log.warn("[RSA]生成密钥对失败", e);
+            log.warn("[RSA] 生成密钥对失败", e);
         }
 
         return null;
@@ -116,7 +116,7 @@ public class RSAUtil {
             cipher.init(Cipher.ENCRYPT_MODE, privateKey);
             return cipher.doFinal(data);
         } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | InvalidKeySpecException | IllegalBlockSizeException e) {
-            log.warn("[RSA]私钥加密失败", e);
+            log.warn("[RSA] 私钥加密失败", e);
         }
 
         return null;
@@ -141,7 +141,7 @@ public class RSAUtil {
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             return cipher.doFinal(data);
         } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | InvalidKeySpecException | IllegalBlockSizeException e) {
-            log.warn("[RSA]公钥加密失败", e);
+            log.warn("[RSA] 公钥加密失败", e);
         }
 
         return null;
@@ -166,7 +166,7 @@ public class RSAUtil {
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             return cipher.doFinal(data);
         } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | InvalidKeySpecException | IllegalBlockSizeException e) {
-            log.warn("[RSA]私钥解密失败", e);
+            log.warn("[RSA] 私钥解密失败", e);
         }
 
         return null;
@@ -204,7 +204,7 @@ public class RSAUtil {
             cipher.init(Cipher.DECRYPT_MODE, pubKey);
             return cipher.doFinal(data);
         } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | InvalidKeySpecException | IllegalBlockSizeException e) {
-            log.warn("[RSA]公钥解密失败", e);
+            log.warn("[RSA] 公钥解密失败", e);
         }
 
         return null;

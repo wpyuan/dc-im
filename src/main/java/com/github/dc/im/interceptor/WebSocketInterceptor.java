@@ -48,14 +48,14 @@ public class WebSocketInterceptor implements HandshakeInterceptor {
         }
         String openId = paramMap.get("k");
         if (StringUtils.isBlank(openId) || !authenticateUserInfoManager.containsKey(openId)) {
-            log.warn("用户登录已失效");
+            log.warn("用户登录已失效，凭证：{}", openId);
             return false;
         }
 
         // 放入属性域
         attributes.put("openId", openId);
         attributes.put("userInfo", authenticateUserInfoManager.get(openId));
-        log.info("[通过验证]: 凭证：{}，{}", openId, authenticateUserInfoManager.get(openId));
+        log.info("[验证通过]: 凭证：{}，用户：{}", openId, authenticateUserInfoManager.get(openId));
         return true;
     }
 
