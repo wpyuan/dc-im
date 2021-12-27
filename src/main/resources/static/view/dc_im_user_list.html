@@ -95,7 +95,7 @@
                         <template v-for="user in userList">
                             <li @click="chatClick(user.username, user)">
                                 <div class="ui-avatar" :class="{'ui-reddot-border': user.notification, 'ui-avatar-offline': user.isOffline}">
-                                    <span :style="{'background-image': 'url(' + user.avatarUrl + ')'}"></span>
+                                    <span :style="{'background-image': 'url(' + user.avatar + ')'}"></span>
                                 </div>
                                 <div class="ui-list-info">
                                     <h4 class="ui-nowrap">{{user.username}}</h4>
@@ -125,7 +125,7 @@
         data() {
             return {
                 warnTooltipsShow: false,
-                myAvatarUrl: '/img/avatar_1.jpg',
+                myAvatarUrl: '/img/avatar_default.jpg',
                 isActive: false,
                 search: undefined,
                 username: '未登录',
@@ -239,7 +239,7 @@
                                 newsCount = lastNewsTip.count + 1;
                             }
                             let newsTip = {
-                                avatar: updateUser.avatarUrl,
+                                avatar: updateUser.avatar,
                                 content: `${updateUser.username}: ${updateUser.lastMsg}`,
                                 uid: data.uid,
                                 show: false,
@@ -262,13 +262,13 @@
                     if (userIndex > -1) {
                         let user = this.userList.find(u => u.username === item.username)
                         user = item
-                        user.avatarUrl = item.avatar
+                        user.avatar = item.avatar
                         Vue.set(this.userList, userIndex, user);
                     } else {
                         this.userList.push({
                             username: item.username,
                             lastMsg: null,
-                            avatarUrl: item.avatar,
+                            avatar: item.avatar,
                             lastDate: '',
                             notification: false,
                             isOffline: item.isOffline,

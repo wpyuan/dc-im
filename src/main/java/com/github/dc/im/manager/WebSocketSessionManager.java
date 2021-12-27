@@ -1,5 +1,6 @@
 package com.github.dc.im.manager;
 
+import com.github.dc.im.pojo.NullWebSocketSession;
 import com.github.dc.im.pojo.UserInfoData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.WebSocketSession;
@@ -85,7 +86,7 @@ public class WebSocketSessionManager {
      */
     public static WebSocketSession get(String key) {
         // 获得 session
-        return SESSION_POOL.get(key);
+        return SESSION_POOL.get(key) == null ? new NullWebSocketSession(key) : SESSION_POOL.get(key);
     }
 
     /**
@@ -97,7 +98,7 @@ public class WebSocketSessionManager {
     public static WebSocketSession getByUsername(String username) {
         Objects.requireNonNull(username, "用户名不能为空");
         Map.Entry<String, WebSocketSession> entry = SESSION_POOL.entrySet().stream().filter(u -> username.equals(((UserInfoData) u.getValue().getAttributes().get("userInfo")).getUsername())).findFirst().orElse(null);
-        return entry == null ? null : entry.getValue();
+        return entry == null ? new NullWebSocketSession(UserInfoData.builder().username(username).build()) : entry.getValue();
     }
 
     /**

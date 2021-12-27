@@ -30,5 +30,6 @@ public class ServerMessage<T> implements Serializable {
     private String from = "server";
     private String action;
     @Builder.Default
+    @JSONField(serialize = false)
     private SendReliability sendReliability = SendReliability.ONCE;
 }

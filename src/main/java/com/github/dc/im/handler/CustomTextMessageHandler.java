@@ -83,7 +83,7 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
         }
 
         // 给客户端的消息
-        ChatMessageSender.to(content, fromSession, toUsername);
+        ChatMessageSender.INSTANCE.to(content, fromSession, toUsername);
     }
 
     /**

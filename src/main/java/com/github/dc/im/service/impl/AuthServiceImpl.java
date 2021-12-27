@@ -60,6 +60,7 @@ public class AuthServiceImpl implements IAuthService {
         authenticateUserInfoManager.put(authKey, userInfoData);
         data.put("success", true);
         data.put("openId", authKey);
+        data.put("userInfo", userInfoData);
         return data;
     }
 

@@ -1,5 +1,6 @@
 package com.github.dc.im.util;
 
+import com.github.dc.im.helper.ApplicationContextHelper;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,5 +32,26 @@ public class EntityUtil {
         }
 
         return entity;
+    }
+
+    /**
+     * 根据class实例化bean
+     *
+     * @param eClass bean的class
+     * @param <E>    bean类型
+     * @return bean
+     */
+    public static <E> E getBean(Class<E> eClass) {
+        if (eClass == null) {
+            return null;
+        }
+
+        E entity = null;
+        entity = ApplicationContextHelper.getBean(eClass);
+        if (entity != null) {
+            return entity;
+        }
+
+        return instance(eClass);
     }
 }
