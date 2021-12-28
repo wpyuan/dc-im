@@ -34,7 +34,7 @@ public class ChatMessageSender implements ISendMessage<ChatContentData> {
     public void handlerSend(ChatContentData message, WebSocketSession session) {
         Objects.requireNonNull(session, "[发送失败] 用户未连接");
         if (!session.isOpen()) {
-            // TODO: 2021/11/11 离线消息记录后上线推送
+            // 离线消息记录后上线推送
             log.warn("[发送失败] 会话已关闭，无法发送聊天内容，转入离线消息处理，凭证：{}，用户：{}，内容：{}", session.getAttributes().get(ConstantArgs.WebSocketSession.KEY), session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO), message);
             OfflineMessageSender<ChatContentData> offlineMessageSender = ApplicationContextHelper.getBean(DcImApplicationContext.class).getOfflineMessageSender();
             offlineMessageSender.handlerSend(message, session);

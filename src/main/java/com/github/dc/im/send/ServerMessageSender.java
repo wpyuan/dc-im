@@ -32,7 +32,7 @@ public class ServerMessageSender implements ISendMessage<ServerMessage>, ISendMe
         Objects.requireNonNull(session, "[发送失败] 用户未连接");
         boolean isOpen = session.isOpen();
         if (!isOpen) {
-            // TODO: 2021/11/11 离线消息记录后上线推送
+            // 离线消息记录后上线推送
             log.warn("[发送失败] 会话已关闭，无法推送服务端消息，转入离线消息处理，凭证：{}，用户：{}，内容：{}", session.getAttributes().get(ConstantArgs.WebSocketSession.KEY), session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO), message);
             OfflineMessageSender<ServerMessage> offlineMessageSender = ApplicationContextHelper.getBean(DcImApplicationContext.class).getOfflineMessageSender();
             offlineMessageSender.handlerSend(message, session);
