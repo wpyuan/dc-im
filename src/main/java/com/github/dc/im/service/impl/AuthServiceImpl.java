@@ -1,14 +1,13 @@
 package com.github.dc.im.service.impl;
 
 import com.github.dc.im.config.DcImProperties;
-import com.github.dc.im.handler.DefaultSocketAuthHandler;
+import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.handler.WebSocketAuthHandler;
-import com.github.dc.im.helper.ApplicationContextHelper;
 import com.github.dc.im.manager.AuthenticateUserInfoManager;
+import com.github.dc.im.pojo.DcImApplicationContext;
 import com.github.dc.im.pojo.UserInfoData;
 import com.github.dc.im.service.IAuthService;
 import com.github.dc.im.util.RSAUtil;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +30,8 @@ public class AuthServiceImpl implements IAuthService {
     private DcImProperties dcImProperties;
     @Autowired
     private AuthenticateUserInfoManager authenticateUserInfoManager;
+    @Autowired
+    private DcImApplicationContext dcImApplicationContext;
 
     @Override
     public Map<String, Object> authorize(UserInfoData userInfoData) {
@@ -51,7 +52,7 @@ public class AuthServiceImpl implements IAuthService {
         // 解密
         userInfoData.setPassword(RSAUtil.decryptByPrivateKey(userInfoData.getPassword(), dcImProperties.getAuthorize().getPrivateKey()));
         Map<String, Object> data = new HashMap<>(2);
-        WebSocketAuthHandler webSocketAuthHandler = ObjectUtils.defaultIfNull(ApplicationContextHelper.getBean(WebSocketAuthHandler.class), new DefaultSocketAuthHandler());
+        WebSocketAuthHandler webSocketAuthHandler = dcImApplicationContext.getWebSocketAuthHandler();
         if (!webSocketAuthHandler.isValid(userInfoData)) {
             data.put("success", false);
             return data;
@@ -59,8 +60,8 @@ public class AuthServiceImpl implements IAuthService {
         String authKey = webSocketAuthHandler.authKey(userInfoData);
         authenticateUserInfoManager.put(authKey, userInfoData);
         data.put("success", true);
-        data.put("openId", authKey);
-        data.put("userInfo", userInfoData);
+        data.put(ConstantArgs.WebSocketSession.KEY, authKey);
+        data.put(ConstantArgs.WebSocketSession.USER_INFO, userInfoData);
         return data;
     }
 
@@ -72,11 +73,11 @@ public class AuthServiceImpl implements IAuthService {
             return data;
         }
         UserInfoData userInfoData = authenticateUserInfoManager.get(openId);
-        WebSocketAuthHandler webSocketAuthHandler = ObjectUtils.defaultIfNull(ApplicationContextHelper.getBean(WebSocketAuthHandler.class), new DefaultSocketAuthHandler());
+        WebSocketAuthHandler webSocketAuthHandler = dcImApplicationContext.getWebSocketAuthHandler();
         String authKey = webSocketAuthHandler.authKey(userInfoData);
         authenticateUserInfoManager.put(authKey, userInfoData);
         data.put("success", true);
-        data.put("openId", authKey);
+        data.put(ConstantArgs.WebSocketSession.KEY, authKey);
         return data;
     }
 }

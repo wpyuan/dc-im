@@ -191,7 +191,7 @@
             },
             closed() {
                 this.status = '连接已关闭';
-                this.reConnection()
+                setTimeout(()=> this.reConnection(), 1000)
             },
             handleReceiveServerMsg(data) {
                 switch (data.action) {

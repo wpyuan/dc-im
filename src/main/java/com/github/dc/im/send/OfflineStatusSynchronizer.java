@@ -5,37 +5,37 @@ import com.github.dc.im.pojo.ServerMessage;
 import com.github.dc.im.pojo.UserInfoData;
 import com.github.dc.im.pojo.UserStatusInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
- *     在线状态同步器，主要负责用户上线时推送该用户上线状态给其他用户
+ *     离线状态同步器，主要负责用户离线时推送该用户离线状态给其他用户
  * </p>
  *
  * @author wangpeiyuan
  * @date 2021/12/24 10:27
  */
 @Slf4j
-public class OnlineStatusSynchronizer {
+public class OfflineStatusSynchronizer {
 
     /**
-     *  推送上线状态
-     * @param self 上线用户会话
+     *  推送离线状态
+     * @param userInfoData 用户
      */
-    public static void push(WebSocketSession self) {
-        UserInfoData user = (UserInfoData) self.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
+    public static void push(UserInfoData userInfoData) {
         List<UserStatusInfo> contents = new ArrayList<>();
         contents.add(UserStatusInfo.builder()
-                .username(user.getUsername())
-                .avatar(user.getAvatar())
-                .isOffline(false)
+                .username(userInfoData.getUsername())
+                .avatar(userInfoData.getAvatar())
+                .isOffline(true)
                 .build());
         ServerMessageSender.INSTANCE.toAll(ServerMessage.<List<UserStatusInfo>>builder()
                 .action(ConstantArgs.TextMessage.Payload.Action.GET_USERS)
                 .content(contents)
                 .date(new Date())
-                .build(), self);
+                .build());
     }
 }

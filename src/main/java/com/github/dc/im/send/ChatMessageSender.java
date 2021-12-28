@@ -1,11 +1,15 @@
 package com.github.dc.im.send;
 
 import com.alibaba.fastjson.JSON;
+import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.handler.MessageRecordAsyncHandler;
 import com.github.dc.im.helper.ApplicationContextHelper;
 import com.github.dc.im.manager.WebSocketSessionManager;
 import com.github.dc.im.pojo.ChatContentData;
+import com.github.dc.im.pojo.DcImApplicationContext;
+import com.github.dc.im.pojo.ServerMessage;
 import com.github.dc.im.pojo.UserInfoData;
+import com.github.dc.im.util.EntityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -31,7 +35,9 @@ public class ChatMessageSender implements ISendMessage<ChatContentData> {
         Objects.requireNonNull(session, "[发送失败] 用户未连接");
         if (!session.isOpen()) {
             // TODO: 2021/11/11 离线消息记录后上线推送
-            log.warn("[发送失败] 会话已关闭，无法发送聊天内容，凭证：{}，用户：{}，内容：{}", session.getAttributes().get("openId"), session.getAttributes().get("userInfo"), message);
+            log.warn("[发送失败] 会话已关闭，无法发送聊天内容，转入离线消息处理，凭证：{}，用户：{}，内容：{}", session.getAttributes().get(ConstantArgs.WebSocketSession.KEY), session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO), message);
+            OfflineMessageSender<ChatContentData> offlineMessageSender = ApplicationContextHelper.getBean(DcImApplicationContext.class).getOfflineMessageSender();
+            offlineMessageSender.handlerSend(message, session);
             return;
         }
         try {
@@ -44,7 +50,7 @@ public class ChatMessageSender implements ISendMessage<ChatContentData> {
     @Override
     public void handlerException(ChatContentData message, WebSocketSession session, Exception e) {
         // TODO 消息补偿机制实现
-        log.warn("[发送失败] 发送聊天内容失败，凭证：{}，用户：{}，内容：{}，异常：{}", session.getAttributes().get("openId"), session.getAttributes().get("userInfo"), message, e.getMessage());
+        log.warn("[发送失败] 发送聊天内容失败，凭证：{}，用户：{}，内容：{}，异常：{}", session.getAttributes().get(ConstantArgs.WebSocketSession.KEY), session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO), message, e.getMessage());
     }
 
     /**
@@ -54,8 +60,8 @@ public class ChatMessageSender implements ISendMessage<ChatContentData> {
      * @param to 目标会话
      */
     public void to(String content, WebSocketSession from, WebSocketSession to) {
-        UserInfoData fromUser = (UserInfoData) from.getAttributes().get("userInfo");
-        UserInfoData toUser = (UserInfoData) to.getAttributes().get("userInfo");
+        UserInfoData fromUser = (UserInfoData) from.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
+        UserInfoData toUser = (UserInfoData) to.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
         Date sendDateTime = new Date();
         ChatContentData chatContentData = ChatContentData.builder()
                 .date(sendDateTime)

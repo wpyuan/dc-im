@@ -2,11 +2,13 @@ package com.github.dc.im.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.data.CacheData;
 import com.github.dc.im.manager.WebSocketSessionManager;
 import com.github.dc.im.pojo.OfflineUserInfo;
 import com.github.dc.im.pojo.UserInfoData;
 import com.github.dc.im.send.ChatMessageSender;
+import com.github.dc.im.send.OfflineMessageSynchronizer;
 import com.github.dc.im.send.OnlineStatusSynchronizer;
 import com.github.dc.im.send.OnlineUserListSynchronizer;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +37,8 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
      */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String openId = String.valueOf(session.getAttributes().get("openId"));
-        UserInfoData userInfoData = (UserInfoData) session.getAttributes().get("userInfo");
+        String openId = String.valueOf(session.getAttributes().get(ConstantArgs.WebSocketSession.KEY));
+        UserInfoData userInfoData = (UserInfoData) session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
         if (StringUtils.isNotBlank(openId)) {
             // 用户连接成功，放入在线用户缓存
             log.info("[连接成功] 凭证：{}, {}", openId, userInfoData);
@@ -59,21 +61,23 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession fromSession, TextMessage message) throws Exception {
         // 获得客户端传来的消息
         String payload = message.getPayload();
-        UserInfoData fromUser = (UserInfoData) fromSession.getAttributes().get("userInfo");
+        UserInfoData fromUser = (UserInfoData) fromSession.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
         JSONObject jsonObject = JSON.parseObject(payload);
-        String toUsername = jsonObject.getString("to");
-        String action = jsonObject.getString("action");
-        String content = jsonObject.getString("content");
+        String toUsername = jsonObject.getString(ConstantArgs.TextMessage.Payload.TO);
+        String action = jsonObject.getString(ConstantArgs.TextMessage.Payload.ACTION);
+        String content = jsonObject.getString(ConstantArgs.TextMessage.Payload.CONTENT);
         if (StringUtils.isBlank(toUsername)) {
             return;
         }
 
         // 给服务的消息
-        if ("server".equals(toUsername)) {
+        if (ConstantArgs.TextMessage.Payload.To.SERVER.equals(toUsername)) {
             switch (action) {
-                case "getUsers":
+                case ConstantArgs.TextMessage.Payload.Action.GET_USERS:
                     // 1、推送用户列表信息
                     OnlineUserListSynchronizer.push(fromSession);
+                    // 2、推送离线消息
+                    OfflineMessageSynchronizer.push(fromSession);
                     break;
                 default:
                     ;
@@ -95,8 +99,8 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
      */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        String openId = String.valueOf(session.getAttributes().get("openId"));
-        UserInfoData userInfoData = (UserInfoData) session.getAttributes().get("userInfo");
+        String openId = String.valueOf(session.getAttributes().get(ConstantArgs.WebSocketSession.KEY));
+        UserInfoData userInfoData = (UserInfoData) session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
         if (StringUtils.isNotBlank(openId)) {
             // 用户退出，移除缓存
             log.info("[断开连接] 凭证：{}, {}", openId, userInfoData);

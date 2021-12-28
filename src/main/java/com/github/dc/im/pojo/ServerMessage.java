@@ -1,6 +1,7 @@
 package com.github.dc.im.pojo;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.enums.SendReliability;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +28,7 @@ public class ServerMessage<T> implements Serializable {
     private Date date;
     private T content;
     @Builder.Default
-    private String from = "server";
+    private String from = ConstantArgs.TextMessage.Payload.To.SERVER;
     private String action;
     @Builder.Default
     @JSONField(serialize = false)

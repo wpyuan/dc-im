@@ -1,5 +1,6 @@
 package com.github.dc.im.pojo;
 
+import com.github.dc.im.constant.ConstantArgs;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.adapter.AbstractWebSocketSession;
@@ -25,24 +26,24 @@ public class NullWebSocketSession extends AbstractWebSocketSession {
     public NullWebSocketSession(String key, UserInfoData userInfoData) {
         super(new HashMap<>(2));
         if (key != null) {
-            this.getAttributes().put("openId", key);
+            this.getAttributes().put(ConstantArgs.WebSocketSession.KEY, key);
         }
         if (userInfoData != null) {
-            this.getAttributes().put("userInfo", userInfoData);
+            this.getAttributes().put(ConstantArgs.WebSocketSession.USER_INFO, userInfoData);
         }
     }
 
     public NullWebSocketSession(String key) {
         super(new HashMap<>(1));
         if (key != null) {
-            this.getAttributes().put("openId", key);
+            this.getAttributes().put(ConstantArgs.WebSocketSession.KEY, key);
         }
     }
 
     public NullWebSocketSession(UserInfoData userInfoData) {
         super(new HashMap<>(1));
         if (userInfoData != null) {
-            this.getAttributes().put("userInfo", userInfoData);
+            this.getAttributes().put(ConstantArgs.WebSocketSession.USER_INFO, userInfoData);
         }
     }
 

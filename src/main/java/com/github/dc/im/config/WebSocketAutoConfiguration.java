@@ -1,13 +1,8 @@
 package com.github.dc.im.config;
 
 import com.github.dc.im.handler.CustomTextMessageHandler;
-import com.github.dc.im.helper.ApplicationContextHelper;
 import com.github.dc.im.interceptor.WebSocketInterceptor;
-import com.github.dc.im.handler.WebSocketAuthHandler;
-import com.github.dc.im.handler.DefaultSocketAuthHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -39,21 +34,4 @@ public class WebSocketAutoConfiguration implements WebSocketConfigurer {
                 .addInterceptors(webSocketInterceptor)
                 .setAllowedOrigins("*");
     }
-
-    /**
-     * 客制化开发时需实现
-     * @return
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public WebSocketAuthHandler webSocketAuthHandler() {
-        return new DefaultSocketAuthHandler();
-    }
-
-    @Bean("dcImApplicationContextHelper")
-    public ApplicationContextHelper applicationContextHelper() {
-        return new ApplicationContextHelper();
-    }
-
-
 }

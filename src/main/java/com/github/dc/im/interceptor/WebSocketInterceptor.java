@@ -1,5 +1,6 @@
 package com.github.dc.im.interceptor;
 
+import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.manager.AuthenticateUserInfoManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,10 +40,12 @@ public class WebSocketInterceptor implements HandshakeInterceptor {
      */
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-        log.trace("握手开始");
+        if (log.isTraceEnabled()) {
+            log.trace("握手开始");
+        }
         String query = request.getURI().getQuery();
         String[] args = query.split("&");
-        Map<String, String> paramMap = new HashMap<>();
+        Map<String, String> paramMap = new HashMap<>(1);
         for (String arg : args) {
             paramMap.put(arg.split("=")[0], arg.split("=")[1]);
         }
@@ -53,8 +56,8 @@ public class WebSocketInterceptor implements HandshakeInterceptor {
         }
 
         // 放入属性域
-        attributes.put("openId", openId);
-        attributes.put("userInfo", authenticateUserInfoManager.get(openId));
+        attributes.put(ConstantArgs.WebSocketSession.KEY, openId);
+        attributes.put(ConstantArgs.WebSocketSession.USER_INFO, authenticateUserInfoManager.get(openId));
         log.info("[验证通过]: 凭证：{}，用户：{}", openId, authenticateUserInfoManager.get(openId));
         return true;
     }
@@ -69,6 +72,8 @@ public class WebSocketInterceptor implements HandshakeInterceptor {
      */
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
-        log.trace("握手完成");
+        if (log.isTraceEnabled()) {
+            log.trace("握手完成");
+        }
     }
 }

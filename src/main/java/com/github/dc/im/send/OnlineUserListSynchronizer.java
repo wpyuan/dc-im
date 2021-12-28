@@ -1,8 +1,10 @@
 package com.github.dc.im.send;
 
+import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.manager.WebSocketSessionManager;
 import com.github.dc.im.pojo.ServerMessage;
 import com.github.dc.im.pojo.UserInfoData;
+import com.github.dc.im.pojo.UserStatusInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -25,22 +27,21 @@ public class OnlineUserListSynchronizer {
      */
     public static void push(WebSocketSession self) {
         List<WebSocketSession> sessions = WebSocketSessionManager.getAll();
-        List<Map<String, Object>> contents = new ArrayList<>();
-        Map<String, Object> msg = null;
+        List<UserStatusInfo> contents = new ArrayList<>();
         for (WebSocketSession session : sessions) {
             if (self.equals(session)) {
                 continue;
             }
-            msg = new HashMap<>(2);
-            UserInfoData user = (UserInfoData) session.getAttributes().get("userInfo");
-            msg.put("username", user.getUsername());
-            msg.put("avatar", user.getAvatar());
-            msg.put("isOffline", false);
-            contents.add(msg);
+            UserInfoData user = (UserInfoData) session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
+            contents.add(UserStatusInfo.builder()
+                    .username(user.getUsername())
+                    .avatar(user.getAvatar())
+                    .isOffline(false)
+                    .build());
         }
 
-        ServerMessageSender.INSTANCE.to(ServerMessage.<List<Map<String, Object>>>builder()
-                .action("getUsers")
+        ServerMessageSender.INSTANCE.to(ServerMessage.<List<UserStatusInfo>>builder()
+                .action(ConstantArgs.TextMessage.Payload.Action.GET_USERS)
                 .content(contents)
                 .date(new Date())
                 .build(), self);

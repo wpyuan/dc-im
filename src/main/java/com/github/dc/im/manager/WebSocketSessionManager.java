@@ -1,5 +1,6 @@
 package com.github.dc.im.manager;
 
+import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.pojo.NullWebSocketSession;
 import com.github.dc.im.pojo.UserInfoData;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +39,12 @@ public class WebSocketSessionManager {
         if (SESSION_POOL.containsKey(key)) {
             removeAndClose(key);
             // 删除该用户其他连接，只允许单个连接
-            String username = ((UserInfoData) session.getAttributes().get("userInfo")).getUsername();
+            String username = ((UserInfoData) session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO)).getUsername();
             List<WebSocketSession> sessions = getAll();
             for (WebSocketSession repeatSession : sessions) {
-                UserInfoData user = (UserInfoData) repeatSession.getAttributes().get("userInfo");
+                UserInfoData user = (UserInfoData) repeatSession.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
                 if (user != null && username.equals(user.getUsername())) {
-                    removeAndClose((String) session.getAttributes().get("openId"));
+                    removeAndClose((String) session.getAttributes().get(ConstantArgs.WebSocketSession.KEY));
                 }
             }
         }
@@ -97,7 +98,7 @@ public class WebSocketSessionManager {
      */
     public static WebSocketSession getByUsername(String username) {
         Objects.requireNonNull(username, "用户名不能为空");
-        Map.Entry<String, WebSocketSession> entry = SESSION_POOL.entrySet().stream().filter(u -> username.equals(((UserInfoData) u.getValue().getAttributes().get("userInfo")).getUsername())).findFirst().orElse(null);
+        Map.Entry<String, WebSocketSession> entry = SESSION_POOL.entrySet().stream().filter(u -> username.equals(((UserInfoData) u.getValue().getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO)).getUsername())).findFirst().orElse(null);
         return entry == null ? new NullWebSocketSession(UserInfoData.builder().username(username).build()) : entry.getValue();
     }
 

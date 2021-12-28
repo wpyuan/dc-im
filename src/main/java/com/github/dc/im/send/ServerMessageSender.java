@@ -1,7 +1,10 @@
 package com.github.dc.im.send;
 
 import com.alibaba.fastjson.JSON;
+import com.github.dc.im.constant.ConstantArgs;
+import com.github.dc.im.helper.ApplicationContextHelper;
 import com.github.dc.im.manager.WebSocketSessionManager;
+import com.github.dc.im.pojo.DcImApplicationContext;
 import com.github.dc.im.pojo.ServerMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.TextMessage;
@@ -27,9 +30,12 @@ public class ServerMessageSender implements ISendMessage<ServerMessage>, ISendMe
     @Override
     public void handlerSend(ServerMessage message, WebSocketSession session) {
         Objects.requireNonNull(session, "[发送失败] 用户未连接");
-        if (!session.isOpen()) {
+        boolean isOpen = session.isOpen();
+        if (!isOpen) {
             // TODO: 2021/11/11 离线消息记录后上线推送
-            log.warn("[发送失败] 会话已关闭，无法推送服务端消息，凭证：{}，用户：{}，内容：{}", session.getAttributes().get("openId"), session.getAttributes().get("userInfo"), message);
+            log.warn("[发送失败] 会话已关闭，无法推送服务端消息，转入离线消息处理，凭证：{}，用户：{}，内容：{}", session.getAttributes().get(ConstantArgs.WebSocketSession.KEY), session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO), message);
+            OfflineMessageSender<ServerMessage> offlineMessageSender = ApplicationContextHelper.getBean(DcImApplicationContext.class).getOfflineMessageSender();
+            offlineMessageSender.handlerSend(message, session);
             return;
         }
         try {
@@ -42,7 +48,7 @@ public class ServerMessageSender implements ISendMessage<ServerMessage>, ISendMe
     @Override
     public void handlerException(ServerMessage message, WebSocketSession session, Exception e) {
         // TODO 消息补偿机制实现
-        log.warn("[发送失败] 服务端发送消息失败，凭证：{}，用户：{}，内容：{}，异常：{}", session.getAttributes().get("openId"), session.getAttributes().get("userInfo"), message, e.getMessage());
+        log.warn("[发送失败] 服务端发送消息失败，凭证：{}，用户：{}，内容：{}，异常：{}", session.getAttributes().get(ConstantArgs.WebSocketSession.KEY), session.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO), message, e.getMessage());
     }
 
     @Override
