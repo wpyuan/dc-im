@@ -121,6 +121,11 @@
             min-width: 50px;
             margin: 8px 5px 8px 5px !important;
         }
+
+        pre {
+            font-family: "Helvetica Neue",Helvetica,STHeiTi,sans-serif;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body ontouchstart>
@@ -139,7 +144,7 @@
                                 <div v-if="line.self&&line.from.username!=chatViewName" class="ui-line-content-box-self">
                                     <div class="ui-line-content-info">
                                         <p class="ui-line-content-header">{{line.from.username}} {{line.date}}</p>
-                                        <div class="ui-line-content-body">{{line.content}}</div>
+                                        <div class="ui-line-content-body"><pre>{{line.content}}</pre></div>
                                     </div>
                                     <!--<img src="itemc.headUrl">-->
                                     <div class="ui-avatar">
@@ -154,7 +159,7 @@
                                     </div>
                                     <div class="ui-line-content-info">
                                         <p class="ui-line-content-header">{{line.from.username}} {{line.date}}</p>
-                                        <div class="ui-line-content-body">{{line.content}}</div>
+                                        <div class="ui-line-content-body"><pre>{{line.content}}</pre></div>
                                     </div>
                                 </div>
                             </template>

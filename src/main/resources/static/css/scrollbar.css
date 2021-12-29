@@ -7,11 +7,33 @@
     border-radius:2px;
 }
 /* 滚动条滑块 */
-::-webkit-scrollbar-thumb {
+/*::-webkit-scrollbar-thumb {*/
+/*    border-radius:2px;*/
+/*    background: rgba(0, 0, 0, 0.1);*/
+/*}*/
+/* 指示应用滚动条的某个页面容器(元素)是否当前被激活*/
+/*::-webkit-scrollbar-thumb:window-inactive {*/
+/*    background: rgba(255, 0, 0, 0.4);*/
+/*}*/
+
+body:hover ::-webkit-scrollbar-track-piece {
     border-radius:2px;
     background: rgba(0, 0, 0, 0.1);
 }
-/* 指示应用滚动条的某个页面容器(元素)是否当前被激活*/
-::-webkit-scrollbar-thumb:window-inactive {
-    background: rgba(255, 0, 0, 0.4);
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+body:active::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+body:hover::-webkit-scrollbar-thumb:vertical {
+    border-radius:2px;
+    background: rgba(0, 0, 0, 0.1);
 }

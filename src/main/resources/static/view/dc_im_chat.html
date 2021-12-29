@@ -8,9 +8,11 @@
     <title>聊天窗口</title>
     <link rel="stylesheet" href="../css/frozenui.css"/>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/scrollbar.css">
     <style>
         .ui-footer {
-            height: 46px;
+            min-height: 46px;
+            height: auto !important;
         }
         iframe {
             width: 100%;
@@ -22,20 +24,27 @@
             overflow-y: hidden;
         }
 
-        .ui-textarea {
-            width: 100%;
-            -webkit-box-sizing: border-box;
-            box-sizing: border-box;
-            -webkit-appearance: none;
-            border: 0;
-            background: none;
-            overflow-y: hidden;
-            resize: none;
-
-            scroll_bar-arrow-color:yellow;
-            scroll_bar-base-color:lightsalmon;
+        .ui-textarea-box {
+            width: 400px;
+            min-height: 25px;
+            max-height: 200px;
+            outline: 0;
+            font-size: 14px;
+            word-wrap: break-word;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-user-modify: read-write-plaintext-only;
+            background-color: #fff;
+            padding-left: 5px;
+            -webkit-box-flex: 1;
+            margin: 10px;
+            padding-top: 5px;
+            padding-right: 5px;
         }
 
+        .ui-input-wrap {
+            height: auto !important;
+        }
     </style>
 </head>
 <body ontouchstart>
@@ -46,12 +55,7 @@
 </header>
 <footer class="ui-footer">
     <section class="ui-input-wrap ui-border-t">
-        <div class="ui-input ui-border-radius">
-            <input type="text" id="content" placeholder="我也说一句...">
-        </div>
-<!--        <div class="ui-input ui-border-radius">-->
-<!--            <textarea class="ui-textarea" placeholder="我也说一句..."></textarea>-->
-<!--        </div>-->
+        <div id="content" class="ui-textarea-box" contenteditable="true" oninput="handleContentInput()"><br/></div>
         <button class="ui-btn" onclick="send()">发送</button>
     </section>
 </footer>
@@ -67,7 +71,7 @@
     // });
 
     function send() {
-        var content = $("#content").val();
+        var content = $("#content").text();
         if (!content) {
             return;
         }
@@ -76,12 +80,18 @@
             content: content,
             to: $("#chatName").html(),
         })
-        $("#content").val('');
+        $("#content").text('');
     }
 
     function refreshChatView(chatName, content) {
         if (document.getElementById(`chatContentIframe-${chatName}`)) {
             document.getElementById(`chatContentIframe-${chatName}`).contentWindow.vm.refreshChatView(content)
+        }
+    }
+
+    function scrollControl(chatName) {
+        if (document.getElementById(`chatContentIframe-${chatName}`)) {
+            document.getElementById(`chatContentIframe-${chatName}`).contentWindow.vm.scrollControl()
         }
     }
 
@@ -120,6 +130,11 @@
         if (iframe) {
             iframe.height = document.documentElement.clientHeight - $(".ui-header").height() - $(".ui-footer").height();
         }
+    }
+
+    function handleContentInput() {
+        iframeAutoSize(document.getElementById(`chatContentIframe-${$("#chatName").html()}`));
+        scrollControl($("#chatName").html());
     }
 </script>
 </body>
