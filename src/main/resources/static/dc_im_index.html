@@ -156,7 +156,7 @@
         switch (target) {
             case "#chatView":
                 // 渲染聊天窗口
-                document.getElementById('chatViewIframe').contentWindow.initIframe(chatViewName)
+                document.getElementById('chatViewIframe').contentWindow.vm.initIframe(chatViewName)
                 break;
             default:
                 ;
@@ -174,11 +174,11 @@
     }
 
     function refreshChatView(chatName, chatContent) {
-        document.getElementById('chatViewIframe').contentWindow.refreshChatView(chatName, chatContent)
+        document.getElementById('chatViewIframe').contentWindow.vm.refreshChatView(chatName, chatContent)
     }
 
-    function getIframeTagHtml(iframeId, tag) {
-        return $(document.getElementById(iframeId).contentWindow.document.body).find(tag).html()
+    function chatVue() {
+        return document.getElementById('chatViewIframe').contentWindow.vm
     }
 </script>
 </body>

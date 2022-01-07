@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="/css/scrollbar.css">
     <style>
+        [v-cloak]{
+            display: none;
+        }
         .ui-footer {
             min-height: 46px;
             height: auto !important;
@@ -24,8 +27,8 @@
             overflow-y: hidden;
         }
 
-        .ui-textarea-box {
-            width: 400px;
+        .ui-textarea-content {
+            /*width: 400px;*/
             min-height: 25px;
             max-height: 200px;
             outline: 0;
@@ -45,77 +48,188 @@
         .ui-input-wrap {
             height: auto !important;
         }
+        .ui-icon-file:hover {
+            color: rgba(0,0,0);
+        }
+        .ui-icon-file:active {
+            color: rgba(0,0,255, .2);
+        }
+        .ui-textarea-tools {
+            padding-left: 10px;
+        }
+        .ui-textarea-box {
+            margin-top: -10px;
+        }
     </style>
 </head>
 <body ontouchstart>
-<header class="ui-header ui-header-positive ui-border-b">
-    <i class="ui-icon-return" onclick="parent.switchTab('#userList')"></i>
-    <h1 id="chatName"></h1>
-<!--    <button class="ui-btn">回首页</button>-->
-</header>
-<footer class="ui-footer">
-    <section class="ui-input-wrap ui-border-t">
-        <div id="content" class="ui-textarea-box" contenteditable="true" oninput="handleContentInput()"><br/></div>
-        <button class="ui-btn" onclick="send()">发送</button>
+<div id="app">
+    <header class="ui-header ui-header-positive ui-border-b">
+        <i class="ui-icon-return" @click="returnPage"></i>
+        <h1>{{chatName}}</h1>
+        <!--    <button class="ui-btn">回首页</button>-->
+    </header>
+    <footer class="ui-footer">
+        <section class="ui-input-wrap ui-border-t ui-textarea-tools">
+            <input type="file" v-show="false" ref="file" @change="handleFileUpload"/>
+            <i class="ui-icon-file" @click="handleFileUploadClick"></i>
+
+        </section>
+        <section class="ui-input-wrap ui-textarea-box">
+            <div ref="textareaBox" class="ui-textarea-content" contenteditable="true" @input="handleContentInput"><br/></div>
+            <button class="ui-btn" @click="send">发送</button>
+        </section>
+    </footer>
+    <section class="ui-container">
+        <template v-for="item in chatContentIframeList">
+            <iframe :ref="item.chatName" v-show="item.show" src="dc_im_chat_content.html" onload="iframeAutoSize(this)"></iframe>
+        </template>
     </section>
-</footer>
-<section class="ui-container">
-</section>
+</div>
 <script src="/js/lib/zepto.min.js"></script>
 <script src="/js/jquery-3.5.1.min.js"></script>
 <script src="/js/websocket-helper.js"></script>
 <script src="/js/db-helper.js"></script>
+<script src="/js/vue.js"></script>
+<script src="/js/upload.js"></script>
 <script>
     // $('.ui-header .ui-btn').click(function(){
     //     location.href= '/dc_im_index.html';
     // });
-
-    function send() {
-        var content = $("#content").text();
-        if (!content) {
-            return;
-        }
-        websocket_helper.push({
-            ws: parent.vm.ws,
-            content: content,
-            to: $("#chatName").html(),
-        })
-        $("#content").text('');
-    }
-
-    function refreshChatView(chatName, content) {
-        if (document.getElementById(`chatContentIframe-${chatName}`)) {
-            document.getElementById(`chatContentIframe-${chatName}`).contentWindow.vm.refreshChatView(content)
-        }
-    }
-
-    function scrollControl(chatName) {
-        if (document.getElementById(`chatContentIframe-${chatName}`)) {
-            document.getElementById(`chatContentIframe-${chatName}`).contentWindow.vm.scrollControl()
-        }
-    }
-
-    function initIframe(chatName) {
-        // 聊天窗口标题
-        $("#chatName").html(chatName);
-        var iframes = document.getElementsByTagName("iframe");
-        var isNotExist = true;
-        if (iframes && iframes.length > 0) {
-            for (let i = 0; i < iframes.length; i++) {
-                let item = iframes[i]
-                if (item.id === `chatContentIframe-${chatName}`) {
-                    $(item).show()
-                    isNotExist = false;
-                } else {
-                    $(item).hide()
-                }
+    var vm = new Vue({
+        el: '#app',
+        data() {
+            return {
+                chatName: undefined,
+                chatContentIframeList: [],
+                content: undefined,
+                currentUser: undefined,
             }
+        },
+        mounted() {
+            this.initData();
+        },
+        methods: {
+            initData() {
+                this.currentUser = JSON.parse(sessionStorage.getItem("dc-chat-user"));
+            },
+            send() {
+                if (!this.content) {
+                    return;
+                }
+                websocket_helper.push({
+                    ws: parent.vm.ws,
+                    content: {
+                        text: this.content,
+                        type: 'text',
+                    },
+                    to: this.chatName,
+                })
+                this.content = '';
+                this.$refs.textareaBox.innerText = '';
+                this.handleScrollHeight();
+            },
+            handleFileUploadClick() {
+                this.$refs['file'].click()
+            },
+            handleFileUpload(e) {
+                let that = this;
+                const files = e.target.files;
+                for (let i = 0; i < files.length; i++) {
+                    const uid = `file_${that.currentUser.username}_${that.chatName}_${new Date().getTime()}_${i}`;
+                    upload_helper.upload({
+                        url: '/dc-im/upload',
+                        uploadData: {
+                            to: this.chatName,
+                        },
+                        file: files[i],
+                        before: function() {
+                            console.log('before');
+                            websocket_helper.push({
+                                ws: parent.vm.ws,
+                                content: {
+                                    text: `发送文件：【${files[i].name}】`,
+                                    type: 'file',
+                                    uid: uid,
+                                },
+                                to: that.chatName,
+                            })
+                        },
+                        progress: function (e) {
+                            if (e.lengthComputable) {
+                                const total = e.total
+                                const position = e.loaded || e.position
+                                let percent = Math.min(Math.ceil(position * 100 / total), 100)
+                                console.log(percent);
+                                // that.loadProgress = percent
+                                // that.progressList.set(params.file.uid, {fileType: fileType, percent: percent})
+                                // if (percent === 100) {
+                                //     // 1秒后关闭进度条
+                                //     setTimeout(() => {
+                                //         that.progressList.delete(params.file.uid)
+                                //         that.loadProgress = 0
+                                //     }, 1000)
+                                // }
+                            }
+                        },
+                        success: function (res) {
+                            console.log('success', res);
+                        },
+                        error: function (errorData) {
+                            console.log('error', errorData);
+                            that.iframeVue(that.chatName).handleFileLineContentOnError(uid);
+                        },
+                    })
+                }
+            },
+            iframeVue(chatName) {
+                return this.$refs[`chatContentIframe-${chatName}`][0].contentWindow.vm;
+            },
+            refreshChatView(chatName, content) {
+                if (this.$refs[`chatContentIframe-${chatName}`][0]) {
+                    this.$refs[`chatContentIframe-${chatName}`][0].contentWindow.vm.refreshChatView(content)
+                }
+            },
+            handleContentInput(e) {
+                this.content = e.target.innerText || '';
+                this.handleScrollHeight();
+            },
+            handleScrollHeight() {
+                iframeAutoSize(this.$refs[`chatContentIframe-${this.chatName}`][0]);
+                this.scrollControl(this.chatName);
+            },
+            scrollControl(chatName) {
+                if (this.$refs[`chatContentIframe-${this.chatName}`][0]) {
+                    this.$refs[`chatContentIframe-${this.chatName}`][0].contentWindow.vm.scrollControl()
+                }
+            },
+            returnPage() {
+                parent.switchTab('#userList')
+            },
+            initIframe(chatName) {
+                // 聊天窗口标题
+                this.chatName = chatName;
+                let isNotExist = true;
+                for (i in this.chatContentIframeList) {
+                    let item = this.chatContentIframeList[i];
+                    if (item.chatName === `chatContentIframe-${chatName}`) {
+                        item.show = true;
+                        isNotExist = false;
+                        setTimeout(()=> this.scrollControl(this.chatName), 1)
+                    } else {
+                        item.show = false;
+                    }
+                }
+
+                if (isNotExist) {
+                    this.chatContentIframeList.push({
+                        chatName: `chatContentIframe-${chatName}`,
+                        show: true,
+                    })
+                }
+            },
         }
-        if (isNotExist) {
-            var iframe = `<iframe id="chatContentIframe-${chatName}" src="dc_im_chat_content.html" onload="iframeAutoSize(this)"></iframe>`;
-            $(".ui-container").append(iframe);
-        }
-    }
+    })
 
     window.onresize = function () {
         var iframes = document.getElementsByTagName("iframe");
@@ -130,11 +244,6 @@
         if (iframe) {
             iframe.height = document.documentElement.clientHeight - $(".ui-header").height() - $(".ui-footer").height();
         }
-    }
-
-    function handleContentInput() {
-        iframeAutoSize(document.getElementById(`chatContentIframe-${$("#chatName").html()}`));
-        scrollControl($("#chatName").html());
     }
 </script>
 </body>

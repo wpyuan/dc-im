@@ -228,7 +228,7 @@
                         break;
                     case "#chatView":
                         // 2、刷新chat_content.html
-                        const chatName = parent.getIframeTagHtml('chatViewIframe', '#chatName');
+                        const chatName = parent.chatVue().chatName;
                         if (chatName !== data.to.username && chatName !== data.from.username) {
                             updateUser.notification = true;
                             // 添加消息提示

@@ -1,10 +1,12 @@
 package com.github.dc.im.controller;
 
+import com.github.dc.im.pojo.UploadData;
 import com.github.dc.im.pojo.UserInfoData;
 import com.github.dc.im.service.IAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 

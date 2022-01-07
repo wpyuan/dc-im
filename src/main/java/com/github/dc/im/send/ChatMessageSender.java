@@ -5,10 +5,7 @@ import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.handler.MessageRecordAsyncHandler;
 import com.github.dc.im.helper.ApplicationContextHelper;
 import com.github.dc.im.manager.WebSocketSessionManager;
-import com.github.dc.im.pojo.ChatContentData;
-import com.github.dc.im.pojo.DcImApplicationContext;
-import com.github.dc.im.pojo.ServerMessage;
-import com.github.dc.im.pojo.UserInfoData;
+import com.github.dc.im.pojo.*;
 import com.github.dc.im.util.EntityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.TextMessage;
@@ -59,7 +56,7 @@ public class ChatMessageSender implements ISendMessage<ChatContentData> {
      * @param from 来源会话
      * @param to 目标会话
      */
-    public void to(String content, WebSocketSession from, WebSocketSession to) {
+    public void to(Content content, WebSocketSession from, WebSocketSession to) {
         UserInfoData fromUser = (UserInfoData) from.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
         UserInfoData toUser = (UserInfoData) to.getAttributes().get(ConstantArgs.WebSocketSession.USER_INFO);
         Date sendDateTime = new Date();
@@ -86,7 +83,7 @@ public class ChatMessageSender implements ISendMessage<ChatContentData> {
      * @param fromUsername 来源用户名
      * @param toUsername 目标用户名
      */
-    public void to(String content, String fromUsername, String toUsername) {
+    public void to(Content content, String fromUsername, String toUsername) {
         WebSocketSession from = WebSocketSessionManager.getByUsername(fromUsername);
         WebSocketSession to = WebSocketSessionManager.getByUsername(toUsername);
         to(content, from, to);
@@ -98,7 +95,7 @@ public class ChatMessageSender implements ISendMessage<ChatContentData> {
      * @param from 来源会话
      * @param toUsername 目标用户名
      */
-    public void to(String content, WebSocketSession from, String toUsername) {
+    public void to(Content content, WebSocketSession from, String toUsername) {
         WebSocketSession to = WebSocketSessionManager.getByUsername(toUsername);
         to(content, from, to);
     }
@@ -109,7 +106,7 @@ public class ChatMessageSender implements ISendMessage<ChatContentData> {
      * @param fromUsername 来源用户名
      * @param to 目标会话
      */
-    public void to(String content, String fromUsername, WebSocketSession to) {
+    public void to(Content content, String fromUsername, WebSocketSession to) {
         WebSocketSession from = WebSocketSessionManager.getByUsername(fromUsername);
         to(content, from, to);
     }

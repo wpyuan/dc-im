@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -144,7 +143,12 @@
                                 <div v-if="line.self&&line.from.username!=chatViewName" class="ui-line-content-box-self">
                                     <div class="ui-line-content-info">
                                         <p class="ui-line-content-header">{{line.from.username}} {{line.date}}</p>
-                                        <div class="ui-line-content-body"><pre>{{line.content}}</pre></div>
+                                        <div class="ui-line-content-body">
+                                            <pre v-if="line.content.type==='text'">{{line.content.text}}</pre>
+                                            <div v-else-if="line.content.type==='file'">
+                                                <a href="#">{{line.content.text}}</a>
+                                            </div>
+                                        </div>
                                     </div>
                                     <!--<img src="itemc.headUrl">-->
                                     <div class="ui-avatar">
@@ -159,7 +163,12 @@
                                     </div>
                                     <div class="ui-line-content-info">
                                         <p class="ui-line-content-header">{{line.from.username}} {{line.date}}</p>
-                                        <div class="ui-line-content-body"><pre>{{line.content}}</pre></div>
+                                        <div class="ui-line-content-body">
+                                            <pre v-if="line.content.type==='text'">{{line.content.text}}</pre>
+                                            <div v-else-if="line.content.type==='file'">
+                                                <a href="#">{{line.content.text}}</a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -224,6 +233,8 @@
                         if (!that.contentList || that.contentList.length === 0) {
                             return;
                         }
+                    },
+                    oncomplete: function (e) {
                         that.refreshChatView();
                     }
                 })
@@ -232,6 +243,11 @@
                 this.contentList = this.contentList.concat(chatContent || []);
                 this.contentList = this.contentList.sort((a, b)=> {return a.uid - b.uid});
                 setTimeout(()=> this.scrollControl(), 1);
+            },
+            handleFileLineContentOnError(uid) {
+                let lineContent = this.contentList.find(c=> c.content.type==='file'&&c.content.uid===uid);
+                debugger
+                lineContent.content.success = false;
             },
         },
     })

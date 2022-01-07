@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.dc.im.constant.ConstantArgs;
 import com.github.dc.im.data.CacheData;
 import com.github.dc.im.manager.WebSocketSessionManager;
+import com.github.dc.im.pojo.Content;
 import com.github.dc.im.pojo.OfflineUserInfo;
 import com.github.dc.im.pojo.UserInfoData;
 import com.github.dc.im.send.ChatMessageSender;
@@ -65,7 +66,8 @@ public class CustomTextMessageHandler extends TextWebSocketHandler {
         JSONObject jsonObject = JSON.parseObject(payload);
         String toUsername = jsonObject.getString(ConstantArgs.TextMessage.Payload.TO);
         String action = jsonObject.getString(ConstantArgs.TextMessage.Payload.ACTION);
-        String content = jsonObject.getString(ConstantArgs.TextMessage.Payload.CONTENT);
+        String contentJSON = jsonObject.getString(ConstantArgs.TextMessage.Payload.CONTENT);
+        Content content = JSON.parseObject(contentJSON, Content.class);
         if (StringUtils.isBlank(toUsername)) {
             return;
         }

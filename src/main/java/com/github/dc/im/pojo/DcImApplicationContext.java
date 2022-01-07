@@ -1,9 +1,6 @@
 package com.github.dc.im.pojo;
 
-import com.github.dc.im.handler.DefaultRecordChatContentHandler;
-import com.github.dc.im.handler.DefaultSocketAuthHandler;
-import com.github.dc.im.handler.RecordChatContentHandler;
-import com.github.dc.im.handler.WebSocketAuthHandler;
+import com.github.dc.im.handler.*;
 import com.github.dc.im.send.DefaultOfflineMessageSender;
 import com.github.dc.im.send.OfflineMessageSender;
 import lombok.AllArgsConstructor;
@@ -41,4 +38,9 @@ public class DcImApplicationContext implements Serializable {
      */
     @Builder.Default
     private OfflineMessageSender offlineMessageSender = new DefaultOfflineMessageSender();
+    /**
+     * 文件处理器，默认不处理
+     */
+    @Builder.Default
+    private FileHandler fileHandler = new DefaultFileHandler();
 }
