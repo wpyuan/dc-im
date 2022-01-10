@@ -186,7 +186,7 @@
                 return this.$refs[`chatContentIframe-${chatName}`][0].contentWindow.vm;
             },
             refreshChatView(chatName, content) {
-                if (this.$refs[`chatContentIframe-${chatName}`][0]) {
+                if (this.$refs[`chatContentIframe-${chatName}`] && this.$refs[`chatContentIframe-${chatName}`][0]) {
                     this.$refs[`chatContentIframe-${chatName}`][0].contentWindow.vm.refreshChatView(content)
                 }
             },

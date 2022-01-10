@@ -215,7 +215,7 @@
                 const changeUser = self ? data.to.username : data.from.username;
                 parent.refreshChatView(changeUser, [content])
                 let updateUser = this.userList.find(u => u.username === changeUser);
-                updateUser.lastMsg = data.content;
+                updateUser.lastMsg = data.content.text;
                 updateUser.lastDate = data.date;
                 const actTab = JSON.parse(sessionStorage.getItem("dc-chat-act-tab"));
                 if (!actTab.tab) {
